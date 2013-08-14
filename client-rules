@@ -1,17 +1,28 @@
 #!/bin/bash
 # for proxy client
-# proxy client and server must be in one subnet (layer-2 connected)
 
+# your IP, gateway and interface
 LOCALIP=202.141.160.99
 GATEWAY=202.141.160.126
 DEV=eth0
+# proxy server IP
 PROXYIP=202.141.176.110
+
+# These two IPs are arbitrary as long as they are consistent with proxy config
+LOCALVIRTIP=10.141.160.99
+PROXYVIRTIP=10.141.176.110
 
 if [ `whoami` != 'root' ]; then
     echo "This script should be run by root!"
     exit 1
 fi
 cd `dirname $0`
+if [ ! -d "conf" ]; then
+    echo "Routing config files do not exist"
+    exit 1
+fi
+
+sysctl -q -w net.ipv4.ip_forward=1
 
 # Inbound traffic should be replyed through the same interface
 ip route replace default via $GATEWAY dev $DEV table 16099
@@ -19,14 +30,21 @@ if [ $(ip rule | grep "from $LOCALIP lookup 16099" | wc -l) -eq 0 ]; then
     ip rule add from $LOCALIP lookup 16099
 fi
 
+# Create IP-in-IP tunnel
+if [ $(ip tunnel | grep "tunipip" | wc -l) -eq 0 ]; then
+    ip tunnel add tunipip mode ipip local $LOCALIP remote $PROXYIP
+fi
+if [ $(ip addr | grep "$LOCALVIRTIP/32" | wc -l) -eq 0 ]; then
+    ip addr add $LOCALVIRTIP/32 dev tunipip
+fi
+ifconfig tunipip up
+ip route replace $PROXYVIRTIP/32 dev tunipip
+
 # CERNET and China Telecom go through default gateway
 cat conf/CERNET.txt conf/CHINANET.txt | \
 while read prefix; do
     ip route replace $prefix via $GATEWAY dev $DEV
 done
 
-# Direct route to proxy server (requires layer-2 connectivity)
-ip route replace $PROXYIP/32 dev $DEV
-
 # The default route is proxy
-ip route replace default via $PROXYIP dev $DEV
+ip route replace default via $PROXYVIRTIP dev tunipip

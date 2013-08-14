@@ -1,18 +1,33 @@
 #!/bin/bash
 # for proxy server
-# proxy client and server should be in the same subnet (layer-2 connected)
 
+# outbound IP, gateway and interface
 LOCALIP=202.141.176.110
 GATEWAY=202.141.176.126
 DEV=vlan400
+# proxy client IP
 CLIENTIP=202.141.160.99
+
+# These two IPs are arbitrary as long as they are consistent with client config
+LOCALVIRTIP=10.141.176.110
+CLIENTVIRTIP=10.141.160.99
 
 if [ `whoami` != 'root' ]; then
     echo "This script should be run by root!"
     exit 1
 fi
 
-sysctl -w net.ipv4.ip_forward=1
+sysctl -q -w net.ipv4.ip_forward=1
+
+# Create IP-in-IP tunnel
+if [ $(ip tunnel | grep "tunipip" | wc -l) -eq 0 ]; then
+    ip tunnel add tunipip mode ipip local $LOCALIP remote $CLIENTIP
+fi
+if [ $(ip addr | grep "$LOCALVIRTIP/32" | wc -l) -eq 0 ]; then
+    ip addr add $LOCALVIRTIP/32 dev tunipip
+fi
+ifconfig tunipip up
+ip route replace $CLIENTVIRTIP/32 dev tunipip
 
 # How SNAT (Source Network Address Translation) works:
 #
@@ -27,13 +42,10 @@ sysctl -w net.ipv4.ip_forward=1
 #   1. lookup NAT table to find ClientIP and ClientPort
 #   2. rewrite to RemoteIP:RemotePort => ClientIP:ClientPort
 #   3. lookup routing table, determine output interface and send the packet out
-iptables -t nat -A POSTROUTING -s $CLIENTIP -j SNAT --to-source $LOCALIP
-
-# Direct route to CLIENTIP (layer-2 connectivity required)
-ip route replace $CLIENTIP/32 dev $DEV
+iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -j SNAT --to-source $LOCALIP
 
 # Routing is before SNAT, we have to trick the routing engine by source routing
 ip route replace default via $GATEWAY dev $DEV table 16099
-if [ $(ip rule | grep "from $CLIENTIP lookup 16099" | wc -l) -eq 0 ]; then
-    ip rule add from $CLIENTIP lookup 16099
+if [ $(ip rule | grep "from $CLIENTVIRTIP lookup 16099" | wc -l) -eq 0 ]; then
+    ip rule add from $CLIENTVIRTIP lookup 16099
 fi

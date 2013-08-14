@@ -1,0 +1,39 @@
+#!/bin/bash
+# for proxy server
+# proxy client and server should be in the same subnet (layer-2 connected)
+
+LOCALIP=202.141.176.110
+GATEWAY=202.141.176.126
+DEV=vlan400
+CLIENTIP=202.141.160.99
+
+if [ `whoami` != 'root' ]; then
+    echo "This script should be run by root!"
+    exit 1
+fi
+
+sysctl -w net.ipv4.ip_forward=1
+
+# How SNAT (Source Network Address Translation) works:
+#
+# Request: ClientIP:ClientPort => RemoteIP:RemotePort
+#   1. lookup routing table and determine output interface
+#   2. allocate a LocalPort
+#   3. insert <ClientIP, ClientPort, LocalIP, LocalPort, RemoteIP, RemotePort> to table
+#   4. rewrite to LocalIP:LocalPort => RemoteIP:RemotePort
+#   5. Send out the interface determined in step 1
+#
+# Response: RemoteIP:RemotePort => LocalIP:LocalPort
+#   1. lookup NAT table to find ClientIP and ClientPort
+#   2. rewrite to RemoteIP:RemotePort => ClientIP:ClientPort
+#   3. lookup routing table, determine output interface and send the packet out
+iptables -t nat -A POSTROUTING -s $CLIENTIP -j SNAT --to-source $LOCALIP
+
+# Direct route to CLIENTIP (layer-2 connectivity required)
+ip route replace $CLIENTIP/32 dev $DEV
+
+# Routing is before SNAT, we have to trick the routing engine by source routing
+ip route replace default via $GATEWAY dev $DEV table 16099
+if [ $(ip rule | grep "from $CLIENTIP lookup 16099" | wc -l) -eq 0 ]; then
+    ip rule add from $CLIENTIP lookup 16099
+fi

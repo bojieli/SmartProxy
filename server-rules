@@ -12,6 +12,13 @@ CLIENTIP=202.141.160.99
 LOCALVIRTIP=10.141.176.110
 CLIENTVIRTIP=10.141.160.99
 
+# another outbound interface for a different route
+LOCALIP2=202.38.95.110
+GATEWAY2=202.38.95.126
+DEV2=vlan95
+LOCALVIRTIP2=10.38.95.110
+CLIENTVIRTIP2=10.38.160.99
+
 if [ `whoami` != 'root' ]; then
     echo "This script should be run by root!"
     exit 1
@@ -29,6 +36,16 @@ fi
 ifconfig tunipip up
 ip route replace $CLIENTVIRTIP/32 dev tunipip
 
+# Create another IP-in-IP tunnel
+if [ $(ip tunnel | grep "tunipip2" | wc -l) -eq 0 ]; then
+    ip tunnel add tunipip2 mode ipip local $LOCALIP2 remote $CLIENTIP
+fi
+if [ $(ip addr | grep "$LOCALVIRTIP2/32" | wc -l) -eq 0 ]; then
+    ip addr add $LOCALVIRTIP2/32 dev tunipip2
+fi
+ifconfig tunipip2 up
+ip route replace $CLIENTVIRTIP2/32 dev tunipip2
+
 # How SNAT (Source Network Address Translation) works:
 #
 # Request: ClientIP:ClientPort => RemoteIP:RemotePort
@@ -43,9 +60,14 @@ ip route replace $CLIENTVIRTIP/32 dev tunipip
 #   2. rewrite to RemoteIP:RemotePort => ClientIP:ClientPort
 #   3. lookup routing table, determine output interface and send the packet out
 iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -j SNAT --to-source $LOCALIP
+iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP2 -j SNAT --to-source $LOCALIP2
 
 # Routing is before SNAT, we have to trick the routing engine by source routing
 ip route replace default via $GATEWAY dev $DEV table 16099
 if [ $(ip rule | grep "from $CLIENTVIRTIP lookup 16099" | wc -l) -eq 0 ]; then
     ip rule add from $CLIENTVIRTIP lookup 16099
+fi
+ip route replace default via $GATEWAY2 dev $DEV2 table 16100
+if [ $(ip rule | grep "from $CLIENTVIRTIP2 lookup 16100" | wc -l) -eq 0 ]; then
+    ip rule add from $CLIENTVIRTIP2 lookup 16100
 fi

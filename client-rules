@@ -14,8 +14,8 @@ PROXYVIRTIP=10.141.176.110
 
 # another proxy peer for a different route
 PROXYIP2=202.38.95.110
-LOCALVIRTIP=10.38.160.99
-PROXYVIRTIP=10.38.95.110
+LOCALVIRTIP2=10.38.160.99
+PROXYVIRTIP2=10.38.95.110
 
 if [ `whoami` != 'root' ]; then
     echo "This script should be run by root!"
@@ -55,15 +55,16 @@ fi
 ifconfig tunipip2 up
 ip route replace $PROXYVIRTIP2/32 dev tunipip2
 
-# China Telecom go through default gateway
-while read prefix; do
-    ip route replace $prefix via $GATEWAY dev $DEV
-done <conf/CHINANET.txt
-
 # CERNET go through proxy2
 while read prefix; do
     ip route replace $prefix via $PROXYVIRTIP2 dev tunipip2
 done <conf/CERNET.txt
+
+# USTCnet and China Telecom go through default gateway
+cat conf/USTC.txt conf/CHINANET.txt | \
+while read prefix; do
+    ip route replace $prefix via $GATEWAY dev $DEV
+done
 
 # The default route is proxy
 ip route replace default via $PROXYVIRTIP dev tunipip

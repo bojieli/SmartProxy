@@ -5,6 +5,9 @@
 LOCALIP=202.141.176.110
 GATEWAY=202.141.176.126
 DEV=vlan400
+ABROAD_GATEWAY=10.8.0.1
+ABROAD_DEV=tun_azure
+
 # proxy client IP
 CLIENTIP=202.141.160.99
 
@@ -63,10 +66,21 @@ iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -j SNAT --to-source $LOCALIP
 iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP2 -j SNAT --to-source $LOCALIP2
 
 # Routing is before SNAT, we have to trick the routing engine by source routing
-ip route replace default via $GATEWAY dev $DEV table 16099
+if [ `ip link | grep $ABROAD_DEV | wc -l` -gt 0 ]; then
+    cat conf/chnroutes.txt | \
+    while read prefix; do
+        ip route replace $prefix via $GATEWAY dev $DEV table 16099
+    done
+    ip route replace default via $ABROAD_GATEWAY dev $ABROAD_DEV table 16099
+else
+    ip route flush table 16099
+    ip route replace default via $GATEWAY dev $DEV table 16099
+fi
+
 if [ $(ip rule | grep "from $CLIENTVIRTIP lookup 16099" | wc -l) -eq 0 ]; then
     ip rule add from $CLIENTVIRTIP lookup 16099
 fi
+
 ip route replace default via $GATEWAY2 dev $DEV2 table 16100
 if [ $(ip rule | grep "from $CLIENTVIRTIP2 lookup 16100" | wc -l) -eq 0 ]; then
     ip rule add from $CLIENTVIRTIP2 lookup 16100

@@ -10,7 +10,7 @@ DEV=vlan400
 ABROAD_LOCALIP=10.8.0.10
 ABROAD_GATEWAY=10.8.0.9
 ABROAD_DEV=tun_azure
-ABROAD_OPTIMISTIC=true # true or false
+ABROAD_OPTIMISTIC=false # true or false
 
 # proxy client IP
 CLIENTIP=202.141.160.99
@@ -76,13 +76,13 @@ ip route flush table 16099
 if [ `ip link | grep $ABROAD_DEV | wc -l` -gt 0 ]; then
     if $ABROAD_OPTIMISTIC; then # tunnel blocked IPs only
         cat conf/blocked.txt | \
-        while read prefix; do
+        while read prefix comment; do
             ip route add $prefix via $ABROAD_GATEWAY dev $ABROAD_DEV table 16099
         done
         ip route add default via $GATEWAY dev $DEV table 16099
     else # tunnel all abroad IPs
-        cat conf/chnroutes.txt | \
-        while read prefix; do
+        cat conf/chnroutes.txt conf/whitelist.txt | \
+        while read prefix comment; do
             ip route add $prefix via $GATEWAY dev $DEV table 16099
         done
         ip route add default via $ABROAD_GATEWAY dev $ABROAD_DEV table 16099

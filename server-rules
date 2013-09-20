@@ -5,7 +5,9 @@
 LOCALIP=202.141.176.110
 GATEWAY=202.141.176.126
 DEV=vlan400
-ABROAD_GATEWAY=10.8.0.1
+
+ABROAD_LOCALIP=10.8.0.10
+ABROAD_GATEWAY=10.8.0.9
 ABROAD_DEV=tun_azure
 
 # proxy client IP
@@ -62,7 +64,8 @@ ip route replace $CLIENTVIRTIP2/32 dev tunipip2
 #   1. lookup NAT table to find ClientIP and ClientPort
 #   2. rewrite to RemoteIP:RemotePort => ClientIP:ClientPort
 #   3. lookup routing table, determine output interface and send the packet out
-iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -j SNAT --to-source $LOCALIP
+iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -o $DEV -j SNAT --to-source $LOCALIP
+iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -o $ABROAD_DEV -j SNAT --to-source $ABROAD_LOCALIP
 iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP2 -j SNAT --to-source $LOCALIP2
 
 # Routing is before SNAT, we have to trick the routing engine by source routing

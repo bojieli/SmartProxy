@@ -1,0 +1,14 @@
+#!/bin/bash
+cd `dirname $0`
+pid=`ps aux | grep openvpn | grep mirrors.conf | awk '{print $2}'`
+if [ ! -z "$pid" ]; then
+	echo "Killing existing OpenVPN"
+	kill $pid
+fi
+pushd /home/boj/openvpn-key
+openvpn --config mirrors.conf --daemon
+popd
+
+echo "waiting for connection to set up..."
+sleep 5
+./server-rules

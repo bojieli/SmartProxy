@@ -1,0 +1,28 @@
+#!/bin/bash
+
+cd /home/boj/smartproxy/conf
+
+cat USTC.txt CHINANET.txt | \
+while read prefix comment; do
+	ip route replace $prefix via 202.141.160.126 dev eth0
+done
+
+# IP-in-IP tunnel
+if [ $(ip tunnel | grep "tunipip" | wc -l) -eq 0 ]; then
+    ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.95.110
+fi
+if [ $(ip addr | grep "10.38.160.99/32" | wc -l) -eq 0 ]; then
+    ip addr add 10.38.160.99/32 dev tunipip
+fi
+ifconfig tunipip up
+ip route replace 10.38.95.110/32 dev tunipip
+
+# CERNET via IP-in-IP tunnel
+cat CERNET.txt | \
+while read prefix comment; do
+	ip route replace $prefix via 10.38.95.110 dev tunipip
+done
+
+ip route replace default via 202.141.176.126 dev eth1
+
+exit 0

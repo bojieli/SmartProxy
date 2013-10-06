@@ -1,8 +1,12 @@
 #!/bin/bash
 
 cd /home/boj/smartproxy/conf
+if [ ! -f "USTC.txt" ]; then
+    echo "CIDR files not exist"
+    exit 1
+fi
 
-cat USTC.txt CHINANET.txt | \
+cat USTC.txt CHINANET.txt google.txt | \
 while read prefix comment; do
 	ip route replace $prefix via 202.141.160.126 dev eth0
 done

@@ -2,29 +2,13 @@
 # for proxy server
 
 # outbound IP, gateway and interface
-LOCALIP=202.141.176.110
-GATEWAY=202.141.176.126
-DEV=vlan400
-
-# abroad tunnel
-ABROAD_LOCALIP=10.8.0.10
-ABROAD_GATEWAY=10.8.0.9
-ABROAD_DEV=tun_azure
-ABROAD_OPTIMISTIC=false # true or false
-
-# proxy client IP
-CLIENTIP=202.141.160.99
+LOCALIP=202.38.95.110
+GATEWAY=202.38.95.126
+DEV=vlan95
 
 # These two IPs are arbitrary as long as they are consistent with client config
-LOCALVIRTIP=10.141.176.110
-CLIENTVIRTIP=10.141.160.99
-
-# another outbound interface for a different route
-LOCALIP2=202.38.95.110
-GATEWAY2=202.38.95.126
-DEV2=vlan95
-LOCALVIRTIP2=10.38.95.110
-CLIENTVIRTIP2=10.38.160.99
+LOCALVIRTIP=10.38.95.110
+CLIENTVIRTIP=10.38.160.99
 
 if [ `whoami` != 'root' ]; then
     echo "This script should be run by root!"
@@ -43,16 +27,6 @@ fi
 ifconfig tunipip up
 ip route replace $CLIENTVIRTIP/32 dev tunipip
 
-# Create another IP-in-IP tunnel
-if [ $(ip tunnel | grep "tunipip2" | wc -l) -eq 0 ]; then
-    ip tunnel add tunipip2 mode ipip local $LOCALIP2 remote $CLIENTIP
-fi
-if [ $(ip addr | grep "$LOCALVIRTIP2/32" | wc -l) -eq 0 ]; then
-    ip addr add $LOCALVIRTIP2/32 dev tunipip2
-fi
-ifconfig tunipip2 up
-ip route replace $CLIENTVIRTIP2/32 dev tunipip2
-
 # How SNAT (Source Network Address Translation) works:
 #
 # Request: ClientIP:ClientPort => RemoteIP:RemotePort
@@ -67,35 +41,10 @@ ip route replace $CLIENTVIRTIP2/32 dev tunipip2
 #   2. rewrite to RemoteIP:RemotePort => ClientIP:ClientPort
 #   3. lookup routing table, determine output interface and send the packet out
 iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -o $DEV -j SNAT --to-source $LOCALIP
-iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -o $ABROAD_DEV -j SNAT --to-source $ABROAD_LOCALIP
-iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP2 -j SNAT --to-source $LOCALIP2
 
 # Routing is before SNAT, we have to trick the routing engine by source routing
 
-ip route flush table 16099
-if [ `ip link | grep $ABROAD_DEV | wc -l` -gt 0 ]; then
-    if $ABROAD_OPTIMISTIC; then # tunnel blocked IPs only
-        cat conf/blocked.txt | \
-        while read prefix comment; do
-            ip route add $prefix via $ABROAD_GATEWAY dev $ABROAD_DEV table 16099
-        done
-        ip route add default via $GATEWAY dev $DEV table 16099
-    else # tunnel all abroad IPs
-        cat conf/chnroutes.txt conf/whitelist.txt | \
-        while read prefix comment; do
-            ip route add $prefix via $GATEWAY dev $DEV table 16099
-        done
-        ip route add default via $ABROAD_GATEWAY dev $ABROAD_DEV table 16099
-    fi
-else
-    ip route add default via $GATEWAY dev $DEV table 16099
-fi
-
+ip route replace default via $GATEWAY dev $DEV table 16099
 if [ $(ip rule | grep "from $CLIENTVIRTIP lookup 16099" | wc -l) -eq 0 ]; then
     ip rule add from $CLIENTVIRTIP lookup 16099
-fi
-
-ip route replace default via $GATEWAY2 dev $DEV2 table 16100
-if [ $(ip rule | grep "from $CLIENTVIRTIP2 lookup 16100" | wc -l) -eq 0 ]; then
-    ip rule add from $CLIENTVIRTIP2 lookup 16100
 fi

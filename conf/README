@@ -8,5 +8,4 @@ CNC.txt: 联通
 CMCC.txt: 移动
 
 chnroutes.txt: 国内IP
-blocked-ip.txt: 可能被墙的IP，不全
 blocked-net.txt: 可能被墙的子网（将IP取到 /24）

@@ -20,4 +20,7 @@ ip route replace 10.8.0.0/16 via 10.8.0.2 table 1002
 ip route replace 10.7.0.0/16 via 10.7.0.2 table 1002
 ip rule add from all lookup 1002
 
+ip rule add fwmark 1 lookup 2000 # tun_azure
+ip rule add fwmark 2 lookup 2001 # tun_azure1
+
 exit 0

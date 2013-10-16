@@ -1,0 +1,23 @@
+#!/bin/bash
+
+CIDR_FILE=/home/boj/smartproxy/conf/blocked-ip.txt
+if [ ! -f "$CIDR_FILE" ]; then
+    echo "CIDR files not exist"
+    exit 1
+fi
+
+if [ "$1" == "10.9.0.1" ]; then
+    table=2000
+elif [ "$1" == "10.10.0.1" ]; then
+    table=2001
+else
+    echo "please specify gateway IP"
+    exit 1
+fi
+
+cat $CIDR_FILE | \
+while read prefix comment; do
+    ip route replace $prefix via $1 table $table
+done
+
+exit 0

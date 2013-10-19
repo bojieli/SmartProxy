@@ -9,20 +9,20 @@ ip addr add 2001:da8:d800:f001::99 dev eth0
 ip -6 route replace default via 2001:da8:d800:f001::1 dev eth0
 
 ip route replace default via 202.141.160.126 table 1000
-ip rule add from 202.141.160.99 lookup 1000
+ip rule add from 202.141.160.99 lookup 1000 pref 3000
 
 ip route replace default via 202.141.176.126 table 1001
-ip rule add from 202.141.176.99 lookup 1001
-ip rule add from 202.141.176.112 lookup 1001
-ip rule add from 202.141.176.113 lookup 1001
+ip rule add from 202.141.176.99 lookup 1001 pref 3000
+ip rule add from 202.141.176.112 lookup 1001 pref 3000
+ip rule add from 202.141.176.113 lookup 1001 pref 3000
 
 ip route replace 10.8.0.0/16 via 10.8.0.2 table 1002
 ip route replace 10.7.0.0/16 via 10.7.0.2 table 1002
-ip rule add from all lookup 1002
+ip rule add from all lookup 1002 pref 2000
 
 ip rule add fwmark 1 lookup 2000 pref 1000 # tun_azure  default
 ip rule add fwmark 1 lookup 2001 pref 1001 # tun_azure1 backup
-ip rule add fwmark 2 lookup 2001 pref 1002 # tun_azure1 default
-ip rule add fwmark 2 lookup 2000 pref 1003 # tun_azure  backup
+ip rule add fwmark 2 lookup 2001 pref 1000 # tun_azure1 default
+ip rule add fwmark 2 lookup 2000 pref 1001 # tun_azure  backup
 
 exit 0

@@ -6,17 +6,14 @@ if [ ! -f "USTC.txt" ]; then
     exit 1
 fi
 
-cat USTC.txt CHINANET.txt CNC.txt google.txt chnroutes.txt | \
-while read prefix comment; do
-	ip route replace $prefix via 202.141.160.126 dev eth0
-done
+function set_route() {
+    ip route flush table $2
+    while read prefix comment; do
+        ip route add $prefix via $1 table $2
+    done
+}
 
-cat CMCC.txt | \
-while read prefix comment; do
-	ip route replace $prefix via 202.141.176.126 dev eth1
-done
-
-# IP-in-IP tunnel
+# set up IP-in-IP tunnel
 if [ $(ip tunnel | grep "tunipip" | wc -l) -eq 0 ]; then
     ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.95.110
 fi
@@ -26,12 +23,32 @@ fi
 ifconfig tunipip up
 ip route replace 10.38.95.110/32 dev tunipip
 
-# CERNET via IP-in-IP tunnel
-cat CERNET.txt | \
-while read prefix comment; do
-	ip route replace $prefix via 10.38.95.110 dev tunipip
+# define routing table preference (high to low)
+route_pref="ustc cernet mobile telecom chnroutes blocked"
+
+counter=10000
+for i in $route_pref; do
+    counter=$(($counter+1))
+    eval $i=$counter
 done
 
-ip route replace default via 202.141.176.126 dev eth1
+# generate routing tables
+cat USTC.txt | set_route 202.141.160.126 $ustc
+cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
+cat CMCC.txt | set_route 202.141.176.126 $mobile
+cat CERNET.txt | set_route 10.38.95.110 $cernet
+cat chnroutes.txt | set_route 202.141.160.126 $chnroutes
+cat blocked-ip.txt | set_route 10.9.0.1 $blocked
+
+# set up ip rule
+counter=10000
+for i in $route_pref; do
+    counter=$(($counter+1))
+    ip rule del from all lookup $counter 2>/dev/null
+    ip rule add from all lookup $counter pref $counter
+done
+
+# default for abroad route
+ip route replace default via 202.141.176.126
 
 exit 0

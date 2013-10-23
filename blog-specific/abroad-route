@@ -1,23 +1,47 @@
 #!/bin/bash
 
-CIDR_FILE=/home/boj/smartproxy/conf/blocked-ip.txt
+BASEDIR=/home/boj/smartproxy/conf
+CIDR_FILE=$BASEDIR/blocked-ip.txt
+whitelist=$BASEDIR/whitelist.txt
+
 if [ ! -f "$CIDR_FILE" ]; then
     echo "CIDR files not exist"
     exit 1
 fi
 
-if [ "$1" == "10.9.0.1" ]; then
-    table=2000
-elif [ "$1" == "10.10.0.1" ]; then
-    table=2001
+function replace_table() {
+    ip route flush table $2
+    cat $CIDR_FILE | \
+    while read prefix comment; do
+        ip route add $prefix via $1 table $2
+    done
+}
+
+gateway=$1
+if [ "$gateway" == "10.9.0.1" ]; then
+    replace_table $gateway 2000
+elif [ "$gateway" == "10.10.0.1" ]; then
+    replace_table $gateway 2001
 else
-    echo "please specify gateway IP"
-    exit 1
+    replace_table 10.9.0.1 2000
+    replace_table 10.10.0.1 2001
 fi
 
-cat $CIDR_FILE | \
+cat $whitelist | \
 while read prefix comment; do
-    ip route replace $prefix via $1 table $table
+    ip route replace $prefix via 202.141.176.126 table 1999
 done
+
+function replace_rule() {
+    ip rule del $@ 2>/dev/null
+    ip rule add $@
+}
+
+replace_rule fwmark 1 lookup 1999 pref 999  # whitelist
+replace_rule fwmark 1 lookup 2000 pref 1000 # tun_azure  default
+replace_rule fwmark 1 lookup 2001 pref 1001 # tun_azure1 backup
+replace_rule fwmark 2 lookup 1999 pref 999  # whitelist
+replace_rule fwmark 2 lookup 2001 pref 1000 # tun_azure1 default
+replace_rule fwmark 2 lookup 2000 pref 1001 # tun_azure  backup
 
 exit 0

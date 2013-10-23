@@ -24,7 +24,7 @@ ifconfig tunipip up
 ip route replace 10.38.95.110/32 dev tunipip
 
 # define routing table preference (high to low)
-route_pref="ustc cernet mobile telecom chnroutes blocked"
+route_pref="ustc cernet mobile telecom chnroutes whitelist blocked"
 
 counter=10000
 for i in $route_pref; do
@@ -38,13 +38,17 @@ cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 cat CMCC.txt | set_route 202.141.176.126 $mobile
 cat CERNET.txt | set_route 10.38.95.110 $cernet
 cat chnroutes.txt | set_route 202.141.160.126 $chnroutes
+cat whitelist.txt | set_route 202.141.176.126 $whitelist
 cat blocked-ip.txt | set_route 10.9.0.1 $blocked
 
 # set up ip rule
 counter=10000
 for i in $route_pref; do
     counter=$(($counter+1))
-    ip rule del from all lookup $counter 2>/dev/null
+    origpref=$(ip rule | grep "from all lookup $counter" | awk 'BEGIN{FS=":"}{print $1}')
+    if [ ! -z "$origpref" ]; then
+        ip rule del from all lookup $counter pref $origpref
+    fi
     ip rule add from all lookup $counter pref $counter
 done
 

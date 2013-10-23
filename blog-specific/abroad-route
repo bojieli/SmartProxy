@@ -1,17 +1,17 @@
 #!/bin/bash
 
 BASEDIR=/home/boj/smartproxy/conf
-CIDR_FILE=$BASEDIR/blocked-ip.txt
+blockedlist=$BASEDIR/blocked-ip.txt
 whitelist=$BASEDIR/whitelist.txt
 
-if [ ! -f "$CIDR_FILE" ]; then
+if [ ! -f "$blockedlist" ]; then
     echo "CIDR files not exist"
     exit 1
 fi
 
 function replace_table() {
     ip route flush table $2
-    cat $CIDR_FILE | \
+    cat $3 | \
     while read prefix comment; do
         ip route add $prefix via $1 table $2
     done
@@ -19,18 +19,17 @@ function replace_table() {
 
 gateway=$1
 if [ "$gateway" == "10.9.0.1" ]; then
-    replace_table $gateway 2000
+    replace_table $gateway 2000 $blockedlist
 elif [ "$gateway" == "10.10.0.1" ]; then
-    replace_table $gateway 2001
+    replace_table $gateway 2001 $blockedlist
 else
-    replace_table 10.9.0.1 2000
-    replace_table 10.10.0.1 2001
+    replace_table 10.9.0.1 2000 $blockedlist
+    replace_table 10.10.0.1 2001 $blockedlist
 fi
 
-cat $whitelist | \
-while read prefix comment; do
-    ip route replace $prefix via 202.141.176.126 table 1999
-done
+if [ -f "$whitelist" ]; then
+    replace_table 202.141.176.126 1999 $whitelist
+fi
 
 function replace_rule() {
     ip rule del $@ 2>/dev/null

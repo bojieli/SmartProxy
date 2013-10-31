@@ -18,13 +18,17 @@
 -A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30443 -j SNAT --to-source 202.141.160.99 
 -A POSTROUTING -s 10.8.0.0/16 -o eth0 -j SNAT --to-source 202.141.160.99 
 -A POSTROUTING -s 10.8.0.0/16 -o eth1 -j SNAT --to-source 202.141.176.99 
--A POSTROUTING -s 10.8.0.0/16 -o tun_azure -j SNAT --to-source 10.9.0.10
--A POSTROUTING -s 10.8.0.0/16 -o tun_azure1 -j SNAT --to-source 10.10.0.10
+-A POSTROUTING -s 10.8.0.0/16 -o tun_azure -j MASQUERADE
+-A POSTROUTING -s 10.8.0.0/16 -o tun_azure1 -j MASQUERADE
+-A POSTROUTING -s 10.8.0.0/16 -o tun_azure2 -j MASQUERADE
+-A POSTROUTING -s 10.8.0.0/16 -o tun_digitalocean -j MASQUERADE
 -A POSTROUTING -s 10.8.0.0/16 -o tunipip -j SNAT --to-source 10.38.160.99
 -A POSTROUTING -s 10.7.0.0/16 -o eth0 -j SNAT --to-source 202.141.160.99 
 -A POSTROUTING -s 10.7.0.0/16 -o eth1 -j SNAT --to-source 202.141.176.99 
--A POSTROUTING -s 10.7.0.0/16 -o tun_azure -j SNAT --to-source 10.9.0.10
--A POSTROUTING -s 10.7.0.0/16 -o tun_azure1 -j SNAT --to-source 10.10.0.10
+-A POSTROUTING -s 10.7.0.0/16 -o tun_azure -j MASQUERADE
+-A POSTROUTING -s 10.7.0.0/16 -o tun_azure1 -j MASQUERADE
+-A POSTROUTING -s 10.7.0.0/16 -o tun_azure2 -j MASQUERADE
+-A POSTROUTING -s 10.7.0.0/16 -o tun_digitalocean -j MASQUERADE
 -A POSTROUTING -s 10.7.0.0/16 -o tunipip -j SNAT --to-source 10.38.160.99
 COMMIT
 # Completed on Tue Sep 24 19:42:29 2013
@@ -32,10 +36,14 @@ COMMIT
 *mangle
 :PREROUTING ACCEPT [1395943703:383120211352]
 -A PREROUTING -j CONNMARK --restore-mark
--A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 2 --packet 0 -j MARK --set-mark 1
--A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 2 --packet 1 -j MARK --set-mark 2
--A PREROUTING -s 10.8.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 2 --packet 0 -j MARK --set-mark 1
--A PREROUTING -s 10.8.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 2 --packet 1 -j MARK --set-mark 2
+-A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 0 -j MARK --set-mark 1
+-A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 1 -j MARK --set-mark 2
+-A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 2 -j MARK --set-mark 3
+-A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 3 -j MARK --set-mark 4
+-A PREROUTING -s 10.8.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 0 -j MARK --set-mark 1
+-A PREROUTING -s 10.8.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 1 -j MARK --set-mark 2
+-A PREROUTING -s 10.8.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 2 -j MARK --set-mark 3
+-A PREROUTING -s 10.8.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 4 --packet 3 -j MARK --set-mark 4
 -A PREROUTING -j CONNMARK --save-mark
 :INPUT ACCEPT [1173408689:292306974431]
 :FORWARD ACCEPT [222534435:90813199235]

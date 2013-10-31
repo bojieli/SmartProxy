@@ -37,10 +37,27 @@ function replace_rule() {
 }
 
 replace_rule fwmark 1 lookup 1999 pref 999  # whitelist
-replace_rule fwmark 1 lookup 2000 pref 1000 # tun_azure  default
-replace_rule fwmark 1 lookup 2001 pref 1001 # tun_azure1 backup
+replace_rule fwmark 1 lookup 2000 pref 1000 # default
+replace_rule fwmark 1 lookup 2001 pref 1001
+replace_rule fwmark 1 lookup 2002 pref 1002
+replace_rule fwmark 1 lookup 2003 pref 1003
+
 replace_rule fwmark 2 lookup 1999 pref 999  # whitelist
-replace_rule fwmark 2 lookup 2001 pref 1000 # tun_azure1 default
-replace_rule fwmark 2 lookup 2000 pref 1001 # tun_azure  backup
+replace_rule fwmark 2 lookup 2001 pref 1000 # default
+replace_rule fwmark 2 lookup 2002 pref 1001
+replace_rule fwmark 2 lookup 2003 pref 1002
+replace_rule fwmark 2 lookup 2000 pref 1003
+
+replace_rule fwmark 3 lookup 1999 pref 999  # whitelist
+replace_rule fwmark 3 lookup 2002 pref 1000 # default
+replace_rule fwmark 3 lookup 2003 pref 1001
+replace_rule fwmark 3 lookup 2000 pref 1002
+replace_rule fwmark 3 lookup 2001 pref 1003
+
+replace_rule fwmark 4 lookup 1999 pref 999  # whitelist
+replace_rule fwmark 4 lookup 2003 pref 1000 # default
+replace_rule fwmark 4 lookup 2000 pref 1001
+replace_rule fwmark 4 lookup 2001 pref 1002
+replace_rule fwmark 4 lookup 2002 pref 1003
 
 exit 0

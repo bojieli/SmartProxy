@@ -1,4 +1,5 @@
 #!/bin/bash
+# Usage: param 0 is gateway. If no param, then set all known gateways
 
 BASEDIR=/home/boj/smartproxy/conf
 blockedlist=$BASEDIR/blocked-ip.txt
@@ -17,15 +18,16 @@ function replace_table() {
     done
 }
 
-gateway=$1
-if [ "$gateway" == "10.9.0.1" ]; then
-    replace_table $gateway 2000 $blockedlist
-elif [ "$gateway" == "10.10.0.1" ]; then
-    replace_table $gateway 2001 $blockedlist
-else
-    replace_table 10.9.0.1 2000 $blockedlist
-    replace_table 10.10.0.1 2001 $blockedlist
-fi
+specified_gw=$1
+known_gw="10.9.0.1 10.10.0.1 10.11.0.1 10.12.0.1"
+
+no=2000
+for gw in $known_gw; do
+    if [ -z "$specified_gw" ] || [ "$gw" == "$specified_gw" ]; then
+        replace_table $gw $no $blockedlist
+    fi
+    no=$(($no+1))
+done
 
 if [ -f "$whitelist" ]; then
     replace_table 202.141.176.126 1999 $whitelist

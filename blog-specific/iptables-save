@@ -21,14 +21,14 @@
 -A POSTROUTING -s 10.8.0.0/16 -o tun_azure -j MASQUERADE
 -A POSTROUTING -s 10.8.0.0/16 -o tun_azure1 -j MASQUERADE
 -A POSTROUTING -s 10.8.0.0/16 -o tun_azure2 -j MASQUERADE
--A POSTROUTING -s 10.8.0.0/16 -o tun_digitalocean -j MASQUERADE
+-A POSTROUTING -s 10.8.0.0/16 -o tun_do -j MASQUERADE
 -A POSTROUTING -s 10.8.0.0/16 -o tunipip -j SNAT --to-source 10.38.160.99
 -A POSTROUTING -s 10.7.0.0/16 -o eth0 -j SNAT --to-source 202.141.160.99 
 -A POSTROUTING -s 10.7.0.0/16 -o eth1 -j SNAT --to-source 202.141.176.99 
 -A POSTROUTING -s 10.7.0.0/16 -o tun_azure -j MASQUERADE
 -A POSTROUTING -s 10.7.0.0/16 -o tun_azure1 -j MASQUERADE
 -A POSTROUTING -s 10.7.0.0/16 -o tun_azure2 -j MASQUERADE
--A POSTROUTING -s 10.7.0.0/16 -o tun_digitalocean -j MASQUERADE
+-A POSTROUTING -s 10.7.0.0/16 -o tun_do -j MASQUERADE
 -A POSTROUTING -s 10.7.0.0/16 -o tunipip -j SNAT --to-source 10.38.160.99
 COMMIT
 # Completed on Tue Sep 24 19:42:29 2013

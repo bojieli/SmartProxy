@@ -20,7 +20,7 @@ fi
 if [ $(ip addr | grep "10.38.160.99/32" | wc -l) -eq 0 ]; then
     ip addr add 10.38.160.99/32 dev tunipip
 fi
-ifconfig tunipip up
+ip link set tunipip up
 ip route replace 10.38.95.110/32 dev tunipip
 
 # define routing table preference (high to low)
@@ -39,7 +39,7 @@ cat CMCC.txt | set_route 202.141.176.126 $mobile
 cat CERNET.txt | set_route 10.38.95.110 $cernet
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat whitelist.txt | set_route 202.141.176.126 $whitelist
-cat blocked-ip.txt | set_route 10.11.0.1 $blocked
+cat blocked-ip.txt | set_route 10.9.0.1 $blocked
 
 # set up ip rule
 counter=10000

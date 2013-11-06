@@ -42,7 +42,7 @@ fi
 if [ $(ip addr | grep "$LOCALVIRTIP/32" | wc -l) -eq 0 ]; then
     ip addr add $LOCALVIRTIP/32 dev tunipip
 fi
-ifconfig tunipip up
+ip link set tunipip up
 ip route replace $PROXYVIRTIP/32 dev tunipip
 
 # The second IP-in-IP tunnel
@@ -52,7 +52,7 @@ fi
 if [ $(ip addr | grep "$LOCALVIRTIP2/32" | wc -l) -eq 0 ]; then
     ip addr add $LOCALVIRTIP2/32 dev tunipip2
 fi
-ifconfig tunipip2 up
+ip link set tunipip2 up
 ip route replace $PROXYVIRTIP2/32 dev tunipip2
 
 # CERNET go through proxy2

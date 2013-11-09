@@ -3,7 +3,7 @@
 
 BASEDIR=/home/boj/smartproxy/conf
 blockedlist=$BASEDIR/blocked-ip.txt
-whitelist=$BASEDIR/whitelist.txt
+whitelist=$BASEDIR/forward-whitelist.txt
 
 if [ ! -f "$blockedlist" ]; then
     echo "CIDR files not exist"

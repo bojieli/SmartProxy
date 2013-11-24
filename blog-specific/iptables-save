@@ -59,5 +59,6 @@ COMMIT
 :fail2ban-ssh - [0:0]
 -A INPUT -p tcp -m multiport --dports 22 -j fail2ban-ssh 
 -A fail2ban-ssh -j RETURN 
+-A FORWARD -d 202.38.64.59/32 -p tcp -m tcp --dport 80 -j REJECT --reject-with icmp-port-unreachable
 COMMIT
 # Completed on Tue Sep 24 19:42:29 2013

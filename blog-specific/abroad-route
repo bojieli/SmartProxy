@@ -21,7 +21,7 @@ function replace_table() {
 }
 
 specified_gw=$1
-known_gw="10.9.0.1 10.10.0.1 10.11.0.1 10.12.0.1"
+known_gw="10.9.0.1 10.10.0.1 10.11.0.1"
 
 no=2000
 for gw in $known_gw; do
@@ -30,38 +30,31 @@ for gw in $known_gw; do
     fi
     no=$(($no+1))
 done
+maxtable=$no
 
 if [ -f "$whitelist" ]; then
     replace_table 202.141.176.126 1999 $whitelist
 fi
 
-function replace_rule() {
-    ip rule del $@ 2>/dev/null
-    ip rule add $@
-}
+# flush related ip rules
+pref=999
+while true; do
+    [ -z "$(ip rule show | grep $pref:)" ] && break
+    while ip rule del pref $pref 2>/dev/null; do echo -n; done
+    pref=$(($pref+1))
+done
 
-replace_rule fwmark 1 lookup 1999 pref 999  # whitelist
-replace_rule fwmark 1 lookup 2000 pref 1000 # default
-replace_rule fwmark 1 lookup 2001 pref 1001
-replace_rule fwmark 1 lookup 2002 pref 1002
-replace_rule fwmark 1 lookup 2003 pref 1003
-
-replace_rule fwmark 2 lookup 1999 pref 999  # whitelist
-replace_rule fwmark 2 lookup 2001 pref 1000 # default
-replace_rule fwmark 2 lookup 2002 pref 1001
-replace_rule fwmark 2 lookup 2003 pref 1002
-replace_rule fwmark 2 lookup 2000 pref 1003
-
-replace_rule fwmark 3 lookup 1999 pref 999  # whitelist
-replace_rule fwmark 3 lookup 2002 pref 1000 # default
-replace_rule fwmark 3 lookup 2003 pref 1001
-replace_rule fwmark 3 lookup 2000 pref 1002
-replace_rule fwmark 3 lookup 2001 pref 1003
-
-replace_rule fwmark 4 lookup 1999 pref 999  # whitelist
-replace_rule fwmark 4 lookup 2003 pref 1000 # default
-replace_rule fwmark 4 lookup 2000 pref 1001
-replace_rule fwmark 4 lookup 2001 pref 1002
-replace_rule fwmark 4 lookup 2002 pref 1003
-
-exit 0
+# insert new rules
+mark=1
+for i in $known_gw; do
+    ip rule add fwmark $mark lookup 1999 pref 999 # whitelist
+    table=$((1999+$mark))
+    pref=1000 # pref 1000 is default, others are backups
+    for j in $known_gw; do
+        ip rule add fwmark $mark lookup $table pref $pref
+        table=$(($table+1))
+        [ $table -eq $maxtable ] && table=2000
+        pref=$(($pref+1))
+    done
+    mark=$(($mark+1))
+done

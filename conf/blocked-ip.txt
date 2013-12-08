@@ -624,8 +624,7 @@
 206.190.37.0/24
 206.214.208.0/24
 206.46.232.0/24
-207.171.166.0/24
-207.171.189.0/24
+207.171.160.0/19 ;amazonaws
 207.192.72.0/24
 207.198.101.0/24 ;cciethebeginning.files.wordpress.com
 207.198.113.0/24 ;cciethebeginning.files.wordpress.com

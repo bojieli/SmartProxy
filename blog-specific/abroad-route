@@ -44,6 +44,10 @@ while true; do
     pref=$(($pref+1))
 done
 
+# currently IP conntrack and NAT are inconsistent
+# disable round-robin until we find the root cause
+exit 0
+
 # insert new rules
 mark=1
 for i in $known_gw; do

@@ -21,7 +21,7 @@ function replace_table() {
 }
 
 specified_gw=$1
-known_gw="10.9.0.1 10.10.0.1 10.11.0.1"
+known_gw="10.11.0.1"
 
 no=2000
 for gw in $known_gw; do

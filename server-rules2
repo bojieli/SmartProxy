@@ -1,16 +1,16 @@
 #!/bin/bash
 # for proxy server
 
-CLIENTIP=202.141.160.110
+CLIENTIP=202.141.176.99
 
 # outbound IP, gateway and interface
-LOCALIP=202.38.95.110
-GATEWAY=202.38.95.126
-DEV=vlan95
+LOCALIP=202.141.176.110
+GATEWAY=202.141.176.126
+DEV=vlan400
 
 # These two IPs are arbitrary as long as they are consistent with client config
-LOCALVIRTIP=10.38.95.110
-CLIENTVIRTIP=10.38.160.99
+LOCALVIRTIP=10.141.176.110
+CLIENTVIRTIP=10.141.176.99
 
 if [ `whoami` != 'root' ]; then
     echo "This script should be run by root!"
@@ -20,11 +20,11 @@ fi
 sysctl -q -w net.ipv4.ip_forward=1
 
 # Create IP-in-IP tunnel
-ip tunnel del tunipip 2>/dev/null
-ip tunnel add tunipip mode ipip local $LOCALIP remote $CLIENTIP
-ip addr add $LOCALVIRTIP/32 dev tunipip
-ifconfig tunipip up
-ip route replace $CLIENTVIRTIP/32 dev tunipip
+ip tunnel del tunipip2 2>/dev/null
+ip tunnel add tunipip2 mode ipip local $LOCALIP remote $CLIENTIP
+ip addr add $LOCALVIRTIP/32 dev tunipip2
+ifconfig tunipip2 up
+ip route replace $CLIENTVIRTIP/32 dev tunipip2
 
 # How SNAT (Source Network Address Translation) works:
 #
@@ -43,7 +43,7 @@ iptables -t nat -A POSTROUTING -s $CLIENTVIRTIP -o $DEV -j SNAT --to-source $LOC
 
 # Routing is before SNAT, we have to trick the routing engine by source routing
 
-ip route replace default via $GATEWAY dev $DEV table 16099
-if [ $(ip rule | grep "from $CLIENTVIRTIP lookup 16099" | wc -l) -eq 0 ]; then
-    ip rule add from $CLIENTVIRTIP lookup 16099
+ip route replace default via $GATEWAY dev $DEV table 17699
+if [ $(ip rule | grep "from $CLIENTVIRTIP lookup 17699" | wc -l) -eq 0 ]; then
+    ip rule add from $CLIENTVIRTIP lookup 17699
 fi

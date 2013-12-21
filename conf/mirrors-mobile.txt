@@ -1,0 +1,1 @@
+66.199.182.32/32  ;dn1.publicinterestregistry.net

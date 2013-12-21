@@ -16,17 +16,20 @@ function set_route() {
 }
 
 # set up IP-in-IP tunnel
-if [ $(ip tunnel | grep "tunipip" | wc -l) -eq 0 ]; then
-    ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.95.110
-fi
-if [ $(ip addr | grep "10.38.160.99/32" | wc -l) -eq 0 ]; then
-    ip addr add 10.38.160.99/32 dev tunipip
-fi
+ip tunnel del tunipip
+ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.95.110
 ip link set tunipip up
+ip addr add 10.38.160.99/32 dev tunipip
 ip route replace 10.38.95.110/32 dev tunipip
 
+ip tunnel del tunipip2
+ip tunnel add tunipip2 mode ipip local 202.141.176.99 remote 202.141.176.110
+ip link set tunipip2 up
+ip addr add 10.141.176.99/32 dev tunipip2
+ip route replace 10.141.176.110/32 dev tunipip2
+
 # define routing table preference (high to low)
-route_pref="ustc cernet mobile telecom chnroutes whitelist blocked"
+route_pref="mirrors_mobile ustc cernet mobile telecom chnroutes whitelist blocked"
 
 counter=10000
 for i in $route_pref; do
@@ -35,6 +38,7 @@ for i in $route_pref; do
 done
 
 # generate routing tables
+cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
 cat USTC.txt | set_route 202.141.160.126 $ustc
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 cat CMCC.txt | set_route 202.141.176.126 $mobile

@@ -1,7 +1,7 @@
 #!/bin/bash
 # for proxy server
 
-CLIENTIP=202.141.160.110
+CLIENTIP=202.141.160.99
 
 # outbound IP, gateway and interface
 LOCALIP=202.38.95.110

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DIR=$(dirname $0)/conf
+
+tmp=$(mktemp)
+wget -4 http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest -O $tmp
+cat $tmp | awk '{FS="|"}{if($2=="CN" && $3=="ipv6"){print $4 "/" $5}}' >$DIR/chnroutes-v6.txt
+cat $tmp | awk '{FS="|"}{if($2=="CN" && $3=="ipv4"){print $4 "/" (32-log($5)/log(2))}}' >$DIR/chnroutes.txt
+rm -f $tmp

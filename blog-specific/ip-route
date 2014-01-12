@@ -29,7 +29,7 @@ ip addr add 10.141.176.99/32 dev tunipip2
 ip route replace 10.141.176.110/32 dev tunipip2
 
 # define routing table preference (high to low)
-route_pref="mirrors_mobile ustc cernet mobile telecom chnroutes whitelist blocked"
+route_pref="mirrors_mobile ustc cernet mobile telecom chnroutes whitelist"
 
 counter=10000
 for i in $route_pref; do
@@ -45,7 +45,7 @@ cat CMCC.txt | set_route 202.141.176.126 $mobile
 cat CERNET.txt | set_route 10.38.95.110 $cernet
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat local-whitelist.txt | set_route 202.141.176.126 $whitelist
-cat blocked-ip.txt | set_route 10.11.0.1 $blocked
+#cat blocked-ip.txt | set_route 10.11.0.1 $blocked
 
 # set up ip rule
 counter=10000
@@ -58,7 +58,14 @@ for i in $route_pref; do
     ip rule add from all lookup $counter pref $counter
 done
 
+while true; do
+    counter=$(($counter+1))
+    origpref=$(ip rule | grep "from all lookup $counter" | awk 'BEGIN{FS=":"}{print $1}')
+    [ -z "$origpref" ] && break
+    ip rule del from all lookup $counter pref $origpref
+done
+
 # default for abroad route
-ip route replace default via 202.141.176.126
+ip route replace default via 10.11.0.1
 
 exit 0

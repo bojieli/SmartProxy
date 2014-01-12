@@ -68,4 +68,11 @@ done
 # default for abroad route
 ip route replace default via 10.11.0.1
 
+
+# IPv6 route
+cat chnroutes-v6.txt | while read prefix comment; do
+    ip -6 route add $prefix via 2001:da8:d800:f001::1    2>/dev/null
+done
+ip -6 route add unreachable 2001::/3    2>/dev/null
+
 exit 0

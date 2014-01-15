@@ -66,7 +66,7 @@ while true; do
 done
 
 # default for abroad route
-ip route replace default via 10.11.0.1
+ip route replace default via 10.12.0.1
 
 
 # IPv6 route

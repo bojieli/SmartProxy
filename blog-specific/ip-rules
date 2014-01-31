@@ -16,4 +16,9 @@ ip rule add from 202.141.176.99 lookup 1001 pref 3000
 ip rule add from 202.141.176.112 lookup 1001 pref 3000
 ip rule add from 202.141.176.113 lookup 1001 pref 3000
 
+ip route replace 10.8.0.0/16 via 10.8.0.2 table 1002
+ip route replace 10.7.0.0/16 via 10.7.0.2 table 1002
+ip route replace 10.6.0.0/16 via 10.6.0.2 table 1002
+ip rule add from all lookup 1002 pref 2000
+
 exit 0

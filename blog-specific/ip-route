@@ -15,6 +15,14 @@ function set_route() {
     done
 }
 
+function replace_route() {
+    while read prefix comment; do
+        if [[ "$prefix" =~ ^[0-9.]+(/[0-9]+)?$ ]]; then
+            ip route replace $prefix via $1 table $2
+        fi
+    done
+}
+
 # set up IP-in-IP tunnel
 ip tunnel del tunipip
 ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.95.110
@@ -45,7 +53,7 @@ cat CMCC.txt | set_route 202.141.176.126 $mobile
 cat CERNET.txt | set_route 10.38.95.110 $cernet
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat local-whitelist.txt | set_route 202.141.176.126 $whitelist
-cat blocked-ip.txt | set_route 10.13.0.1 $blocked
+cat blocked-ip.txt | replace_route 10.13.0.1 $blocked
 
 # set up ip rule
 counter=10000

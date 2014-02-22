@@ -9,6 +9,9 @@
 -A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 20020 -j DNAT --to-destination 202.38.70.100:30020 
 -A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 25000:25099 -j DNAT --to-destination 202.38.70.100 
 -A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 20443 -j DNAT --to-destination 202.38.70.100:30443 
+-A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 25565:25567 -j DNAT --to-destination 114.214.197.140
+-A PREROUTING -d 202.141.176.99/32 -i eth1 -p tcp -m tcp --dport 25565:25567 -j DNAT --to-destination 114.214.197.140
+-A POSTROUTING -d 114.214.197.140/32 -p tcp -m tcp --dport 25565:25567 -j SNAT --to-source 202.141.160.99
 -A POSTROUTING -s 192.168.100.0/24 -o eth0 -j MASQUERADE 
 -A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 20010 -j SNAT --to-source 202.141.160.99 
 -A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30010 -j SNAT --to-source 202.141.160.99 
@@ -26,6 +29,8 @@ COMMIT
 :PREROUTING ACCEPT [1395943703:383120211352]
 -A PREROUTING -j CONNMARK --restore-mark
 -A PREROUTING -m mark ! --mark 0 -j ACCEPT
+-A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp -j MARK --set-mark 160
+-A PREROUTING -d 202.141.176.99/32 -i eth1 -p tcp -m tcp -j MARK --set-mark 176
 -A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 3 --packet 0 -j MARK --set-mark 1
 -A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 3 --packet 1 -j MARK --set-mark 2
 -A PREROUTING -s 10.7.0.0/16 -m mark --mark 0x0 -m statistic --mode nth --every 3 --packet 2 -j MARK --set-mark 3

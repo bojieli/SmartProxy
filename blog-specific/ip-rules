@@ -10,11 +10,13 @@ ip -6 route replace default via 2001:da8:d800:f001::1 dev eth0
 
 ip route replace default via 202.141.160.126 table 1000
 ip rule add from 202.141.160.99 lookup 1000 pref 3000
+ip rule add fwmark 160 lookup 1000 pref 2999
 
 ip route replace default via 202.141.176.126 table 1001
 ip rule add from 202.141.176.99 lookup 1001 pref 3000
 ip rule add from 202.141.176.112 lookup 1001 pref 3000
 ip rule add from 202.141.176.113 lookup 1001 pref 3000
+ip rule add fwmark 176 lookup 1001 pref 2999
 
 ip route replace 10.8.0.0/16 via 10.8.0.2 table 1002
 ip route replace 10.7.0.0/16 via 10.7.0.2 table 1002

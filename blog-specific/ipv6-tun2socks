@@ -12,19 +12,44 @@ ip addr add fdfe:dcba:9876::2/126 dev $TUN_DEV
 LOCAL_PORT=5724
 SSH_LOG=/var/log/tun2socks-ssh.log
 
-function ssh_not_connected() {
-    [ "$(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$LOCAL_PORT\"" | wc -l)" -eq 0 ]
+function port_not_listening() {
+    [ "$(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$1\"" | wc -l)" -eq 0 ]
 }
 
+function ssh_not_connected() {
+    port_not_listening $LOCAL_PORT
+}
+
+function wait_connect() {
+    i=0
+    while [ $i -lt $1 ]; do
+        i=$(($i+1))
+        sleep 1
+        ssh_not_connected && continue
+        return 0 # success
+    done
+    return 1 # error
+}
+
+OBFSPROXY_PORT=3724
+if port_not_listening $OBFSPROXY_PORT; then
+    echo "starting new obfsproxy instance"
+    ## on VPS should run: obfsproxy obfs3 --dest=127.0.0.1:22 server [::]:42734
+    nohup obfsproxy obfs3 --dest=[2605:6400:2:fed5:22:8476:c847:6c51]:42734 client 127.0.0.1:$OBFSPROXY_PORT >/dev/null 2>&1 &
+else
+    echo "obfsproxy already started, no retry"
+fi
+
 if ssh_not_connected; then
-    SSH_COMMAND="ssh -D 127.0.0.1:$LOCAL_PORT -T -i /home/boj/keys/LUGforVM.gem lug@vm.gaoyifan.com"
+    SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=no -D 127.0.0.1:$LOCAL_PORT -T -i /home/boj/keys/LUGforVM.gem lug@127.0.0.1 -p $OBFSPROXY_PORT"
     echo "$SSH_COMMAND"
     # if the SSH connection failed, reconnect automatically
     nohup bash -c "while true; do $SSH_COMMAND; done" >>$SSH_LOG 2>&1 &
-    # wait for initial connection
-    sleep 2
-    # test SSH connection
-    ssh_not_connected && echo "Failed to connect server" && exit 1
+    if wait_connect 10; then
+        echo "SSH connected"
+    else
+        echo "Failed to connect server" && exit 1
+    fi
 else
     echo "SSH already connected, no retry"
 fi

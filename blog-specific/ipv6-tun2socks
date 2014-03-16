@@ -26,14 +26,21 @@ if ssh_not_connected; then
     # test SSH connection
     ssh_not_connected && echo "Failed to connect server" && exit 1
 else
-    echo "SSH already connected, restart tun2socks"
+    echo "SSH already connected, no retry"
 fi
 
-SOCKS_LOG=/var/log/tun2socks.log
-SOCKS_COMMAND="badvpn-tun2socks --tundev $TUN_DEV --netif-ipaddr 10.0.0.1 --netif-netmask 255.255.255.252 --netif-ip6addr fdfe:dcba:9876::1 --socks-server-addr 127.0.0.1:$LOCAL_PORT"
-echo "$SOCKS_COMMAND"
-pkill badvpn-tun2socks >/dev/null 2>&1
-nohup $SOCKS_COMMAND >>$SOCKS_LOG 2>&1 &
+function socks_not_connected() {
+    [ "$(ps aux | grep badvpn-tun2socks | grep $TUN_DEV | wc -l)" -eq 0 ]
+}
+
+if socks_not_connected; then
+    SOCKS_LOG=/var/log/tun2socks.log
+    SOCKS_COMMAND="badvpn-tun2socks --tundev $TUN_DEV --netif-ipaddr 10.0.0.1 --netif-netmask 255.255.255.252 --netif-ip6addr fdfe:dcba:9876::1 --socks-server-addr 127.0.0.1:$LOCAL_PORT"
+    echo "$SOCKS_COMMAND"
+    nohup $SOCKS_COMMAND >>$SOCKS_LOG 2>&1 &
+else
+    echo "socks already connected, no retry"
+fi
 
 # IPv6 routes
 ip -6 route del unreachable 2000::/3  2>/dev/null

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+[ "$(whoami)" != "root" ] && echo "You must be root to run this program" && exit 1
+
+TUN_DEV=tun3
+ip tuntap add dev $TUN_DEV mode tun
+ip link set $TUN_DEV up
+ip addr add 10.0.0.2/30 dev $TUN_DEV
+ip addr add fdfe:dcba:9876::2/126 dev $TUN_DEV
+
+# ssh connection
+LOCAL_PORT=5724
+SSH_LOG=/var/log/tun2socks-ssh.log
+
+function ssh_not_connected() {
+    [ "$(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$LOCAL_PORT\"" | wc -l)" -eq 0 ]
+}
+
+if ssh_not_connected; then
+    SSH_COMMAND="ssh -D 127.0.0.1:$LOCAL_PORT -T -i /home/boj/keys/LUGforVM.gem lug@vm.gaoyifan.com"
+    echo "$SSH_COMMAND"
+    # if the SSH connection failed, reconnect automatically
+    nohup bash -c "while true; do $SSH_COMMAND; done" >>$SSH_LOG 2>&1 &
+    # wait for initial connection
+    sleep 2
+    # test SSH connection
+    ssh_not_connected && echo "Failed to connect server" && exit 1
+else
+    echo "SSH already connected, restart tun2socks"
+fi
+
+SOCKS_LOG=/var/log/tun2socks.log
+SOCKS_COMMAND="badvpn-tun2socks --tundev $TUN_DEV --netif-ipaddr 10.0.0.1 --netif-netmask 255.255.255.252 --netif-ip6addr fdfe:dcba:9876::1 --socks-server-addr 127.0.0.1:$LOCAL_PORT"
+echo "$SOCKS_COMMAND"
+pkill badvpn-tun2socks >/dev/null 2>&1
+nohup $SOCKS_COMMAND >>$SOCKS_LOG 2>&1 &
+
+# IPv6 routes
+ip -6 route del unreachable 2000::/3  2>/dev/null
+ip -6 route add 2000::/3 via fdfe:dcba:9876::1 dev $TUN_DEV
+
+# IPv4 routes
+#ip route add xxx via 10.0.0.1 dev $TUN_DEV

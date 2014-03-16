@@ -81,6 +81,12 @@ ip route replace default via 202.141.176.126
 cat chnroutes-v6.txt | while read prefix comment; do
     ip -6 route add $prefix via 2001:da8:d800:f001::1    2>/dev/null
 done
-ip -6 route add unreachable 2001::/3    2>/dev/null
+
+IPV6_SCRIPT=$(dirname $0)/ipv6-tun2socks
+if [ -x "$IPV6_SCRIPT" ]; then
+    $IPV6_SCRIPT
+else
+    ip -6 route add unreachable 2001::/3    2>/dev/null
+fi
 
 exit 0

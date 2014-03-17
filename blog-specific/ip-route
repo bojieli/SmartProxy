@@ -83,14 +83,14 @@ cat chnroutes-v6.txt | while read prefix comment; do
 done
 
 popd >/dev/null
-IPV6_SCRIPT=$(dirname $0)/ipv6-tun2socks
-if [ -x "$IPV6_SCRIPT" ]; then
-    $IPV6_SCRIPT
-    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
-        ip -6 route add unreachable $prefix 2>/dev/null
-    done
-else
-    ip -6 route add unreachable 2001::/3    2>/dev/null
-fi
+#IPV6_SCRIPT=$(dirname $0)/ipv6-tun2socks
+#if [ -x "$IPV6_SCRIPT" ]; then
+#    $IPV6_SCRIPT
+#    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+#        ip -6 route add unreachable $prefix 2>/dev/null
+#    done
+#else
+#    ip -6 route add unreachable 2000::/3    2>/dev/null
+#fi
 
 exit 0

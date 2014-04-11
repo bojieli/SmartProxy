@@ -54,7 +54,6 @@ cat CMCC.txt | set_route 202.141.176.126 $mobile
 cat CERNET.txt | set_route 10.38.95.110 $cernet
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat local-whitelist.txt | set_route 202.141.176.126 $whitelist
-cat blocked-ip.txt | replace_route 10.13.0.1 $blocked
 
 # set up ip rule
 counter=10000
@@ -83,14 +82,23 @@ cat chnroutes-v6.txt | while read prefix comment; do
 done
 
 popd >/dev/null
-#IPV6_SCRIPT=$(dirname $0)/ipv6-tun2socks
-#if [ -x "$IPV6_SCRIPT" ]; then
-#    $IPV6_SCRIPT
-#    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
-#        ip -6 route add unreachable $prefix 2>/dev/null
-#    done
-#else
-#    ip -6 route add unreachable 2000::/3    2>/dev/null
-#fi
+IPV6_TUN_ENABLE=false
+IPV6_SCRIPT=$(dirname $0)/ipv6-tun2socks
+if [ -x "$IPV6_SCRIPT" ] && $IPV6_TUN_ENABLE; then
+    $IPV6_SCRIPT
+    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+        ip -6 route add unreachable $prefix 2>/dev/null
+    done
+else
+    echo "Disable abroad IPv6"
+    ip -6 route add unreachable 2000::/3    2>/dev/null
+fi
+
+IPV4_SCRIPT=$(dirname $0)/ipv4-tun2socks
+if [ -x "$IPV4_SCRIPT" ]; then
+    echo "IPv4 tun2socks initializing"
+    $IPV4_SCRIPT
+    cat $CONF_DIR/blocked-ip.txt | set_route 10.0.1.1 $blocked
+fi
 
 exit 0

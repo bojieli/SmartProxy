@@ -1,0 +1,80 @@
+#!/bin/bash
+
+[ "$(whoami)" != "root" ] && echo "You must be root to run this program" && exit 1
+
+TUN_DEV=tun4
+ip tuntap add dev $TUN_DEV mode tun
+ip link set $TUN_DEV up
+ip addr add 10.0.1.2/30 dev $TUN_DEV
+
+# ssh connection
+LOCAL_PORT=5725
+SSH_LOG=/var/log/tun2socks-ssh.log
+
+function port_not_listening() {
+    [ "$(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$1\"" | wc -l)" -eq 0 ]
+}
+
+function ssh_not_connected() {
+    port_not_listening $LOCAL_PORT
+}
+
+# first param: wait timeout in seconds
+function wait_connect() {
+    i=0
+    while [ $i -lt $1 ]; do
+        i=$(($i+1))
+        sleep 1
+        ssh_not_connected && continue
+        return 0 # success
+    done
+    return 1 # error
+}
+
+function run_forever() {
+    # kill all running instances
+    ps aux | grep -F "$*" | awk '{print $2}' | while read pid; do kill $pid; done >/dev/null 2>&1
+    # run in background
+    nohup bash -c "while true; do $*; done" >>$SSH_LOG 2>&1 &
+}
+
+OBFSPROXY_PORT=3725
+if port_not_listening $OBFSPROXY_PORT; then
+    echo "starting new obfsproxy instance"
+    ## on VPS should run: obfsproxy obfs3 --dest=127.0.0.1:22 server [::]:42734
+    COMMAND="obfsproxy obfs3 --dest=128.199.237.96:42734 client 127.0.0.1:$OBFSPROXY_PORT"
+    echo "$COMMAND"
+    run_forever $COMMAND
+else
+    echo "obfsproxy already started, no retry"
+fi
+
+if ssh_not_connected; then
+    SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o PasswordAuthentication=no -N -T -D 127.0.0.1:$LOCAL_PORT -i /home/boj/.ssh/id_rsa root@127.0.0.1 -p $OBFSPROXY_PORT"
+    echo "$SSH_COMMAND"
+    # if the SSH connection failed, reconnect automatically
+    run_forever $SSH_COMMAND
+    if wait_connect 10; then
+        echo "SSH connected"
+    else
+        echo "Failed to connect server" && exit 1
+    fi
+else
+    echo "SSH already connected, no retry"
+fi
+
+function socks_not_connected() {
+    [ "$(ps aux | grep badvpn-tun2socks | grep $TUN_DEV | wc -l)" -eq 0 ]
+}
+
+if socks_not_connected; then
+    SOCKS_LOG=/var/log/tun2socks.log
+    SOCKS_COMMAND="badvpn-tun2socks --tundev $TUN_DEV --netif-ipaddr 10.0.1.1 --netif-netmask 255.255.255.252 --socks-server-addr 127.0.0.1:$LOCAL_PORT"
+    echo "$SOCKS_COMMAND"
+    nohup $SOCKS_COMMAND >>$SOCKS_LOG 2>&1 &
+else
+    echo "socks already connected, no retry"
+fi
+
+# IPv4 routes
+#ip route add xxx via 10.0.0.1 dev $TUN_DEV

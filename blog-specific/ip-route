@@ -82,23 +82,49 @@ cat chnroutes-v6.txt | while read prefix comment; do
 done
 
 popd >/dev/null
-IPV6_TUN_ENABLE=false
-IPV6_SCRIPT=$(dirname $0)/ipv6-tun2socks
-if [ -x "$IPV6_SCRIPT" ] && $IPV6_TUN_ENABLE; then
-    $IPV6_SCRIPT
+IPV6_SOCKS_ENABLE=false
+IPV6_SOCKS_SCRIPT=$(dirname $0)/ipv6-tun2socks
+IPV6_GRE_TUNNEL_ENABLE=false
+if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
+    echo "IPv6 tun2socks initializing"
+    $IPV6_SOCKS_SCRIPT
     cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
         ip -6 route add unreachable $prefix 2>/dev/null
     done
+elif $IPV6_GRE_TUNNEL_ENABLE; then
+    echo "Abroad IPv6 go through GRE tunnel"
+    if [ -z "$(ip tunnel show blogv6)" ]; then
+        ip tunnel add blogv6 mode gre remote 127.0.0.1 local 202.141.176.99 ttl 255
+        ip link set blogv6 up
+        ip -6 addr add fdfe:dcba:9876::2/30 dev blogv6
+    fi
+    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+        ip -6 route add unreachable $prefix 2>/dev/null
+    done
+    ip -6 route add 2000::/3 via fdfe:dcba:9876::1 dev blogv6
+    ip -6 route del unreachable 2000::/3    2>/dev/null
 else
     echo "Disable abroad IPv6"
     ip -6 route add unreachable 2000::/3    2>/dev/null
 fi
 
-IPV4_SCRIPT=$(dirname $0)/ipv4-tun2socks
-if [ -x "$IPV4_SCRIPT" ]; then
+IPV4_SOCKS_SCRIPT=$(dirname $0)/ipv4-tun2socks
+IPV4_SOCKS_ENABLE=false
+IPV4_GRE_TUNNEL_ENABLE=true
+if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
     echo "IPv4 tun2socks initializing"
-    $IPV4_SCRIPT
+    $IPV4_SOCKS_SCRIPT
     cat $CONF_DIR/blocked-ip.txt | set_route 10.0.1.1 $blocked
+elif $IPV4_GRE_TUNNEL_ENABLE; then
+    echo "Abroad IPv4 go though GRE tunnel"
+    if [ -z "$(ip tunnel show blog)" ]; then
+        ip tunnel add blog mode gre remote 128.199.237.96 local 202.141.176.99 ttl 255
+        ip link set blog up
+        ip addr add 10.0.2.2/24 dev blog
+    fi
+    cat $CONF_DIR/blocked-ip.txt | set_route 10.0.2.1 $blocked
+else
+    echo "No available tunnel for abroad IP"
 fi
 
 exit 0

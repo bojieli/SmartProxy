@@ -38,13 +38,18 @@ function run_forever() {
     nohup bash -c "while true; do $*; done" >>$SSH_LOG 2>&1 &
 }
 
+function kill_and_run() {
+    ps aux | grep -F "$*" | awk '{print $2}' | while read pid; do kill $pid; done >/dev/null 2>&1
+    nohup bash -c "$*" >>$SSH_LOG 2>&1 &
+}
+
 OBFSPROXY_PORT=3725
 if port_not_listening $OBFSPROXY_PORT; then
     echo "starting new obfsproxy instance"
-    ## on VPS should run: obfsproxy obfs3 --dest=127.0.0.1:22 server [::]:42734
-    COMMAND="obfsproxy obfs3 --dest=128.199.237.96:42734 client 127.0.0.1:$OBFSPROXY_PORT"
-    echo "$COMMAND"
-    run_forever $COMMAND
+    ## change remote port every hour
+    ## on VPS should run: port=30000; while true; do port=$(($port+1)); [ $port -ge 60000 ] && port=30000; echo "Listening on $port"; timeout -s SIGUSR1 -k 120 3600 obfsproxy obfs3 --dest=127.0.0.1:22 server [::]:$port; sleep 1; done
+    ## first run on VPS, then run this script as quickly as possible (in 120s)
+    kill_and_run "port=30000; while true; do port=\$((\$port+1)); [ \$port -ge 60000 ] && port=30000; timeout 3600 obfsproxy obfs3 --dest=128.199.237.96:\$port client 127.0.0.1:$OBFSPROXY_PORT; done"
 else
     echo "obfsproxy already started, no retry"
 fi

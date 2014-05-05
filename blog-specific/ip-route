@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONF_DIR=/home/boj/smartproxy/conf
+CONF_DIR=$(dirname $0)/../conf
 pushd $CONF_DIR >/dev/null
 if [ ! -f "USTC.txt" ]; then
     echo "CIDR files not exist"
@@ -8,20 +8,9 @@ if [ ! -f "USTC.txt" ]; then
 fi
 
 function set_route() {
-    ip route flush table $2
-    while read prefix comment; do
-        if [[ "$prefix" =~ ^[0-9.]+(/[0-9]+)?$ ]]; then
-            ip route add $prefix via $1 table $2
-        fi
-    done
-}
-
-function replace_route() {
-    while read prefix comment; do
-        if [[ "$prefix" =~ ^[0-9.]+(/[0-9]+)?$ ]]; then
-            ip route replace $prefix via $1 table $2
-        fi
-    done
+    gw=$1
+    tableid=$2
+    sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route add %s via $gw table $tableid\n\", \$1); }" | ip -batch -
 }
 
 # set up IP-in-IP tunnel

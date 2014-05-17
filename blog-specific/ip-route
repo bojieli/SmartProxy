@@ -10,7 +10,7 @@ fi
 function set_route() {
     gw=$1
     tableid=$2
-    sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route add %s via $gw table $tableid\n\", \$1); }" | ip -batch -
+    sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route replace %s via $gw table $tableid\n\", \$1); }" | ip -batch -
 }
 
 # set up IP-in-IP tunnel

@@ -112,11 +112,14 @@ if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
     fi
 elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
+    remote="128.199.222.182"
+    ip route replace $remote/32 via 202.141.176.126
     if [ -z "$(ip tunnel show blog)" ]; then
-        ip route replace 128.199.237.96/32 via 202.141.176.126
-        ip tunnel add blog mode gre remote 128.199.237.96 local 202.141.176.99 ttl 255
+        ip tunnel add blog mode gre remote $remote local 202.141.176.99 ttl 255
         ip link set blog up
         ip addr add 10.0.2.2/24 dev blog
+    else
+        ip tunnel change blog mode gre remote $remote local 202.141.176.99 ttl 255
     fi
     if $DEFAULT_ABROAD_TUNNEL; then
         ip route replace default via 10.0.2.1

@@ -1,6 +1,8 @@
 64.238.144.0/20    ;ACM
 192.41.161.0/24    ;ACS
 206.25.0.0/16      ;AIAA
+184.180.12.0/22    ;AMS
+130.44.0.0/16      ;AMS
 129.41.0.0/16      ;Annual Reviews, ASCE, Taylor and Francis
 149.28.0.0/16      ;APS
 38.119.0.0/16      ;ASME
@@ -13,6 +15,7 @@
 82.109.207.14/32   ;emerald
 195.92.228.61/32   ;emerald
 208.99.166.224/27  ;IEEE
+140.98.0.0/16      ;IEEE
 167.68.0.0/16      ;INSPEC
 62.50.9.0/24       ;IOP
 184.50.85.0/24     ;Nature (Akamai)
@@ -20,6 +23,7 @@
 193.132.48.0/23    ;Oxford Online Journals
 193.67.160.0/21    ;Oxford Online Journals (highwire)
 184.27.23.0/24     ;PQDT (Akamai)
+132.236.0.0/16     ;projecteuclid.org
 135.196.210.128/25 ;RSC
 171.66.122.53/24   ;sciencemag
 209.18.64.0/18     ;SPIE

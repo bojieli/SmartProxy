@@ -62,10 +62,6 @@ while true; do
     ip rule del from all lookup $counter pref $origpref
 done
 
-# default for abroad route
-DEFAULT_ABROAD_TUNNEL=true
-$DEFAULT_ABROAD_TUNNEL || ip route replace default via 202.141.176.126
-
 # IPv6 route
 cat chnroutes-v6.txt | while read prefix comment; do
     ip -6 route add $prefix via 2001:da8:d800:f001::1    2>/dev/null
@@ -98,6 +94,26 @@ else
     ip -6 route add unreachable 2000::/3    2>/dev/null
 fi
 
+function gre_replace() {
+    tunnel=$1
+    real_local=$2
+    real_remote=$3
+    real_gw=$4
+    virt_local=$5
+
+    ip route replace $real_remote/32 via $real_gw
+    if [ -z "$(ip tunnel show $tunnel)" ]; then
+        ip tunnel add $tunnel mode gre remote $real_remote local $real_local ttl 255
+        ip link set $tunnel up
+        ip addr add $virt_local/30 dev $tunnel
+    else
+        ip tunnel change $tunnel mode gre remote $real_remote local $real_local ttl 255
+    fi
+}
+
+DEFAULT_ABROAD_TUNNEL=true
+BLOCKED_IP_ABROAD_TUNNEL=true
+
 IPV4_SOCKS_SCRIPT=$(dirname $0)/ipv4-tun2socks
 IPV4_SOCKS_ENABLE=false
 IPV4_GRE_TUNNEL_ENABLE=true
@@ -113,20 +129,22 @@ if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
 elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
     remote="199.231.209.17"
-    localip="202.141.160.99"
-    ip route replace $remote/32 via 202.141.160.126
-    if [ -z "$(ip tunnel show blog)" ]; then
-        ip tunnel add blog mode gre remote $remote local $localip ttl 255
-        ip link set blog up
-        ip addr add 10.0.2.2/24 dev blog
-    else
-        ip tunnel change blog mode gre remote $remote local $localip ttl 255
-    fi
+    remote_blocked="128.199.237.96"
+    localip="202.141.176.99"
+    gw="202.141.176.126"
     if $DEFAULT_ABROAD_TUNNEL; then
+        echo "Default abroad IP via tunnel"
+        gre_replace blog $localip $remote $gw 10.0.2.2
         ip route replace default via 10.0.2.1
-        ip route flush table $blocked
     else
-        cat $CONF_DIR/blocked-ip.txt | set_route 10.0.2.1 $blocked
+        ip route replace default via $gw
+    fi
+    if $BLOCKED_IP_ABROAD_TUNNEL; then
+        echo "Blocked IP via a second tunnel"
+        gre_replace blog1 $localip $remote_blocked $gw 10.0.3.2
+        cat $CONF_DIR/blocked-ip.txt | set_route 10.0.3.1 $blocked
+    else
+        ip route flush table $blocked
     fi
 else
     echo "No available tunnel for abroad IP"

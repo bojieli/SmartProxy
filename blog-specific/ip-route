@@ -1,6 +1,23 @@
 #!/bin/bash
 
+### BEGIN CONFIG ###
+
 CONF_DIR=$(dirname $0)/../conf
+
+IPV6_SOCKS_ENABLE=false
+IPV6_SOCKS_SCRIPT=$(dirname $0)/ipv6-tun2socks
+IPV6_GRE_TUNNEL_ENABLE=true
+IPV6_BLACKLIST_ENABLE=false
+
+DEFAULT_ABROAD_TUNNEL=true
+BLOCKED_IP_ABROAD_TUNNEL=false
+
+IPV4_SOCKS_SCRIPT=$(dirname $0)/ipv4-tun2socks
+IPV4_SOCKS_ENABLE=false
+IPV4_GRE_TUNNEL_ENABLE=true
+
+### END CONFIG ###
+
 pushd $CONF_DIR >/dev/null
 if [ ! -f "USTC.txt" ]; then
     echo "CIDR files not exist"
@@ -68,31 +85,6 @@ cat chnroutes-v6.txt | while read prefix comment; do
 done
 
 popd >/dev/null
-IPV6_SOCKS_ENABLE=false
-IPV6_SOCKS_SCRIPT=$(dirname $0)/ipv6-tun2socks
-IPV6_GRE_TUNNEL_ENABLE=false
-if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
-    echo "IPv6 tun2socks initializing"
-    $IPV6_SOCKS_SCRIPT
-    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
-        ip -6 route add unreachable $prefix 2>/dev/null
-    done
-elif $IPV6_GRE_TUNNEL_ENABLE; then
-    echo "Abroad IPv6 go through GRE tunnel"
-    if [ -z "$(ip tunnel show blogv6)" ]; then
-        ip tunnel add blogv6 mode gre remote 127.0.0.1 local 202.141.176.99 ttl 255
-        ip link set blogv6 up
-        ip -6 addr add fdfe:dcba:9876::2/30 dev blogv6
-    fi
-    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
-        ip -6 route add unreachable $prefix 2>/dev/null
-    done
-    ip -6 route add 2000::/3 via fdfe:dcba:9876::1 dev blogv6
-    ip -6 route del unreachable 2000::/3    2>/dev/null
-else
-    echo "Disable abroad IPv6"
-    ip -6 route add unreachable 2000::/3    2>/dev/null
-fi
 
 function gre_replace() {
     tunnel=$1
@@ -104,19 +96,38 @@ function gre_replace() {
     ip route replace $real_remote/32 via $real_gw
     if [ -z "$(ip tunnel show $tunnel)" ]; then
         ip tunnel add $tunnel mode gre remote $real_remote local $real_local ttl 255
-        ip link set $tunnel up
-        ip addr add $virt_local/30 dev $tunnel
     else
         ip tunnel change $tunnel mode gre remote $real_remote local $real_local ttl 255
     fi
+    ip link set $tunnel up
+    ip addr add $virt_local dev $tunnel
 }
 
-DEFAULT_ABROAD_TUNNEL=true
-BLOCKED_IP_ABROAD_TUNNEL=true
+if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
+    echo "IPv6 tun2socks initializing"
+    $IPV6_SOCKS_SCRIPT
+    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+        ip -6 route add unreachable $prefix 2>/dev/null
+    done
+elif $IPV6_GRE_TUNNEL_ENABLE; then
+    echo "Abroad IPv6 go through GRE tunnel"
+    gre_replace do2 202.141.176.99 128.199.170.5 202.141.176.126 fdfe:dcba:9876::2/112
+    if $IPV6_BLACKLIST_ENABLE; then
+        cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+            ip -6 route add unreachable $prefix 2>/dev/null
+        done
+    else
+        cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+            ip -6 route del unreachable $prefix 2>/dev/null
+        done
+    fi
+    ip -6 route del unreachable 2000::/3    2>/dev/null
+    ip -6 route add 2000::/3 via fdfe:dcba:9876::1
+else
+    echo "Disable abroad IPv6"
+    ip -6 route add unreachable 2000::/3    2>/dev/null
+fi
 
-IPV4_SOCKS_SCRIPT=$(dirname $0)/ipv4-tun2socks
-IPV4_SOCKS_ENABLE=false
-IPV4_GRE_TUNNEL_ENABLE=true
 if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
     echo "IPv4 tun2socks initializing"
     $IPV4_SOCKS_SCRIPT
@@ -128,20 +139,18 @@ if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
     fi
 elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
-    remote="199.231.209.17"
-    remote_blocked="128.199.237.96"
     localip="202.141.176.99"
     gw="202.141.176.126"
     if $DEFAULT_ABROAD_TUNNEL; then
-        echo "Default abroad IP via tunnel"
-        gre_replace blog $localip $remote $gw 10.0.2.2
+        echo "Default abroad IPv4 via tunnel"
+        gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
         ip route replace default via 10.0.2.1
     else
         ip route replace default via $gw
     fi
     if $BLOCKED_IP_ABROAD_TUNNEL; then
-        echo "Blocked IP via a second tunnel"
-        gre_replace blog1 $localip $remote_blocked $gw 10.0.3.2
+        echo "Blocked IPv4 via a second tunnel"
+        gre_replace do1 $localip 128.199.237.96 $gw 10.0.3.2/30
         cat $CONF_DIR/blocked-ip.txt | set_route 10.0.3.1 $blocked
     else
         ip route flush table $blocked

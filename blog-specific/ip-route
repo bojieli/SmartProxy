@@ -56,7 +56,8 @@ done
 cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
 cat USTC.txt | set_route 202.141.160.126 $ustc
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
-cat CMCC.txt | set_route 202.141.176.126 $mobile
+#cat CMCC.txt | set_route 202.141.176.126 $mobile
+echo "" | set_route 202.141.176.126 $mobile
 cat CERNET.txt | set_route 10.38.95.110 $cernet
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat paper-sites.txt | set_route 202.141.176.126 $whitelist
@@ -129,6 +130,8 @@ else
     ip -6 route add unreachable 2000::/3    2>/dev/null
 fi
 
+localip="202.141.176.99"
+gw="202.141.176.126"
 if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
     echo "IPv4 tun2socks initializing"
     $IPV4_SOCKS_SCRIPT
@@ -140,8 +143,6 @@ if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
     fi
 elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
-    localip="202.141.176.99"
-    gw="202.141.176.126"
     if $DEFAULT_ABROAD_TUNNEL; then
         echo "Default abroad IPv4 via tunnel"
         gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
@@ -158,6 +159,7 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
     fi
 else
     echo "No available tunnel for abroad IP"
+    ip route replace default via $gw
 fi
 
 exit 0

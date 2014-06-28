@@ -31,6 +31,7 @@ else
     export IPV6_GRE_TUNNEL_ENABLE=true
     export IPV4_GRE_TUNNEL_ENABLE=true
     output=$(./ip-route)
+    /etc/init.d/bind9 restart  ## clean DNS cache which may have been polluted
     mutt -s "VPN tunnel recovered" -- "servmon@blog.ustc.edu.cn" <<EOF
 Tunnel switched on.
 Output: $output

@@ -13,6 +13,7 @@
 
 echo 1 > /proc/sys/net/ipv4/ip_forward
 echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
+echo 655360 >/proc/sys/net/nf_conntrack_max
 
 local_ip="128.199.170.5"
 local_ipv6="2400:6180:0:d0::30:8001/64"

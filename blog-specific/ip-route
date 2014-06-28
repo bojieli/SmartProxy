@@ -145,8 +145,9 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
     if $DEFAULT_ABROAD_TUNNEL; then
         echo "Default abroad IPv4 via tunnel"
+        #gre_replace do1 $localip 128.199.237.96 $gw 10.0.2.2/30
         gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
-        ip route replace default via 10.0.2.1
+        ip route replace default via 10.0.2.1 dev do2
     else
         ip route replace default via $gw
     fi

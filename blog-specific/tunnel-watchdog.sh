@@ -10,7 +10,7 @@ if [ "$gw" = "10.0.2.1" ]; then
 # tunnel is enabled
     # if fail for all 5 trials...
     for i in {1..5}; do
-        curl -4 --connect-timeout 10 --max-time 30 http://openvpn.net/ >/dev/null 2>&1 && exit 0
+        curl -4 --connect-timeout 10 --max-time 30 http://googleblog.blogspot.com/ >/dev/null 2>&1 && exit 0
     done
     # switch off default route from tunnel
     export IPV6_GRE_TUNNEL_ENABLE=false
@@ -22,10 +22,10 @@ Output: $output
 EOF
 else
 # tunnel is disabled
-    # if succeed for all 6 trials in 3 consecutive minutes...
-    for i in {1..6}; do
-        curl -4 --connect-timeout 10 --max-time 30 http://openvpn.net/ >/dev/null 2>&1 || exit 0
-        sleep 30
+    # if succeed for all 10 trials...
+    for i in {1..10}; do
+        curl --interface do2 -4 --connect-timeout 10 --max-time 30 http://googleblog.blogspot.com/ >/dev/null 2>&1 || exit 0
+        sleep 5
     done
     # switch on default route via tunnel
     export IPV6_GRE_TUNNEL_ENABLE=true

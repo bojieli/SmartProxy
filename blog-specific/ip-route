@@ -11,6 +11,9 @@ IPV6_BLACKLIST_ENABLE=${IPV6_BLACKLIST_ENABLE:-true}
 
 DEFAULT_ABROAD_TUNNEL=${DEFAULT_ABROAD_TUNNEL:-true}
 BLOCKED_IP_ABROAD_TUNNEL=${BLOCKED_IP_ABROAD_TUNNEL:-false}
+ABROAD_TUNNEL_RESTRICT_PORTS=${ABROAD_TUNNEL_RESTRICT_PORTS:-true}
+TCP_RESTRICT_PORTS=${TCP_RESTRICT_PORTS:-22,23,25,53,80,443,110,143,993,995}
+UDP_RESTRICT_PORTS=${UDP_RESTRICT_PORTS:-53}
 
 IPV4_SOCKS_SCRIPT=$(dirname $0)/ipv4-tun2socks
 IPV4_SOCKS_ENABLE=${IPV4_SOCKS_ENABLE:-false}
@@ -104,6 +107,19 @@ function gre_replace() {
     ip addr add $virt_local dev $tunnel
 }
 
+pref_restrict_port=$counter
+counter=$(($counter+1))
+
+function do_tunnel_restrict_ports() {
+    cmd=$1
+    for j in "-D" "-A"; do
+        $1 -t mangle $j PREROUTING -m mark --mark 0 -p tcp -m multiport --dports $TCP_RESTRICT_PORTS -j MARK --set-mark 8080
+        $1 -t mangle $j PREROUTING -m mark --mark 0 -p udp -m multiport --dports $UDP_RESTRICT_PORTS -j MARK --set-mark 8080
+        $1 -t mangle $j PREROUTING -m mark --mark 0 -p icmp -j MARK --set-mark 8080
+        $1 -t mangle $j PREROUTING -m mark --mark 0 -j MARK --set-mark 9090
+    done
+}
+
 if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
     echo "IPv6 tun2socks initializing"
     $IPV6_SOCKS_SCRIPT
@@ -113,6 +129,16 @@ if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
 elif $IPV6_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv6 go through GRE tunnel"
     gre_replace do2 202.141.176.99 128.199.170.5 202.141.176.126 fdfe:dcba:9876::2/112
+    if $ABROAD_TUNNEL_RESTRICT_PORTS; then
+        echo "Restricted IPv6 L4 ports do not go through tunnel"
+        do_tunnel_restrict_ports ip6tables
+        ipv6_gw="2001:da8:d800:f001::1"
+        ip -6 route replace default via $ipv6_gw table 9090
+        ip -6 rule del fwmark 9090 lookup 9090 pref $pref_restrict_port 2>/dev/null
+        ip -6 rule add fwmark 9090 lookup 9090 pref $pref_restrict_port
+    else
+        ip -6 rule del fwmark 9090 lookup 9090 pref $pref_restrict_port 2>/dev/null
+    fi
     if $IPV6_BLACKLIST_ENABLE; then
         cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
             ip -6 route add unreachable $prefix 2>/dev/null
@@ -123,7 +149,7 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
         done
     fi
     ip -6 route del 2000::/3    2>/dev/null
-    ip -6 route add 2000::/3 via fdfe:dcba:9876::1
+    ip -6 route add 2000::/3 via fdfe:dcba:9876::1 dev do2
 else
     echo "Disable abroad IPv6"
     ip -6 route del 2000::/3    2>/dev/null
@@ -147,6 +173,15 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
         echo "Default abroad IPv4 via tunnel"
         #gre_replace do1 $localip 128.199.237.96 $gw 10.0.2.2/30
         gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
+        if $ABROAD_TUNNEL_RESTRICT_PORTS; then
+            echo "Restricted IPv4 L4 ports do not go through tunnel"
+            do_tunnel_restrict_ports iptables
+            ip route replace default via $gw table 9090
+            ip rule del fwmark 9090 lookup 9090 pref $pref_restrict_port 2>/dev/null
+            ip rule add fwmark 9090 lookup 9090 pref $pref_restrict_port
+        else
+            ip rule del fwmark 9090 lookup 9090 pref $pref_restrict_port 2>/dev/null
+        fi
         ip route replace default via 10.0.2.1 dev do2
     else
         ip route replace default via $gw

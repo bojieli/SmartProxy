@@ -85,8 +85,10 @@ done
 
 # IPv6 route
 cat chnroutes-v6.txt | while read prefix comment; do
-    ip -6 route add $prefix via 2001:da8:d800:f001::1    2>/dev/null
+    ip -6 route add $prefix via 2001:da8:d800:f001::1 table 10000   2>/dev/null
 done
+ip -6 rule del from all lookup 10000 pref 10000 2>/dev/null
+ip -6 rule add from all lookup 10000 pref 10000
 
 popd >/dev/null
 

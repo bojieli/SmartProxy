@@ -23,4 +23,7 @@ ip route replace 10.7.0.0/16 via 10.7.0.2 table 1002
 ip route replace 10.6.0.0/16 via 10.6.0.2 table 1002
 ip rule add from all lookup 1002 pref 2000
 
+ip route replace default via 10.0.2.1 table 1003
+ip rule add fwmark 1194 lookup 1003 pref 2999
+
 exit 0

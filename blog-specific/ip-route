@@ -130,6 +130,7 @@ if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
     done
 elif $IPV6_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv6 go through GRE tunnel"
+    #gre_replace do2 202.141.176.99 202.141.176.110 202.141.176.126 fdfe:dcba:9876::2/112
     gre_replace do2 202.141.176.99 128.199.170.5 202.141.176.126 fdfe:dcba:9876::2/112
     if $ABROAD_TUNNEL_RESTRICT_PORTS; then
         echo "Restricted IPv6 L4 ports do not go through tunnel"
@@ -173,7 +174,7 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
     if $DEFAULT_ABROAD_TUNNEL; then
         echo "Default abroad IPv4 via tunnel"
-        #gre_replace do1 $localip 128.199.237.96 $gw 10.0.2.2/30
+        #gre_replace do2 $localip 202.141.176.110 $gw 10.0.2.2/30
         gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
         if $ABROAD_TUNNEL_RESTRICT_PORTS; then
             echo "Restricted IPv4 L4 ports do not go through tunnel"

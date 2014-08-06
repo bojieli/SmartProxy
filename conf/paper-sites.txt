@@ -25,7 +25,8 @@
 184.27.23.0/24     ;PQDT (Akamai)
 132.236.0.0/16     ;projecteuclid.org
 135.196.210.128/25 ;RSC
-171.66.122.53/24   ;sciencemag
+171.66.122.0/24    ;sciencemag
 209.18.64.0/18     ;SPIE
 63.164.11.0/24     ;Springer
 199.171.200.0/22   ;Wiley
+193.54.237.0/24    ;afst.cedram.org

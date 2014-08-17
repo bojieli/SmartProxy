@@ -61,7 +61,8 @@ cat USTC.txt | set_route 202.141.160.126 $ustc
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 #cat CMCC.txt | set_route 202.141.176.126 $mobile
 echo "" | set_route 202.141.176.126 $mobile
-cat CERNET.txt | set_route 10.38.95.110 $cernet
+#cat CERNET.txt | set_route 10.38.95.110 $cernet
+echo "" | set_route 10.38.95.110 $cernet
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat paper-sites.txt | set_route 202.141.176.126 $whitelist
 

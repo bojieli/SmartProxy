@@ -29,6 +29,7 @@ if [ "$gw" = "10.0.2.1" ]; then
         export IPV6_GRE_TUNNEL_ENABLE=false
         export IPV4_GRE_TUNNEL_ENABLE=false
         output=$(./ip-route)
+        /etc/init.d/bind9 restart  ## clean DNS negative cache
         mutt -s "VPN tunnel test failed" -- "servmon@blog.ustc.edu.cn" <<EOF
 Tunnel switched off.
 Output: $output

@@ -17,6 +17,14 @@ if [ "$gw" = "10.0.2.1" ]; then
     done
     # in case other probes have switched off the tunnel... double check
     if [ "$(getgw)" = "10.0.2.1" ]; then
+        [ -x "./try-reboot-vps" ] && ./try-reboot-vps
+
+        sleep 10 # give time for VPS to reboot
+        # if it recovers, do not switch off tunnel
+        for i in {1..2}; do
+            curl -4 --connect-timeout 10 --max-time 30 http://googleblog.blogspot.com/ >/dev/null 2>&1 && exit 0
+        done
+
         # switch off default route from tunnel
         export IPV6_GRE_TUNNEL_ENABLE=false
         export IPV4_GRE_TUNNEL_ENABLE=false
@@ -25,12 +33,13 @@ if [ "$gw" = "10.0.2.1" ]; then
 Tunnel switched off.
 Output: $output
 EOF
+        # do not give up! try it again
         [ -x "./try-reboot-vps" ] && ./try-reboot-vps
     fi
 else
 # tunnel is disabled
-    # if succeed for all 10 trials...
-    for i in {1..10}; do
+    # if succeed for all 5 trials...
+    for i in {1..5}; do
         curl --interface do2 -4 --connect-timeout 10 --max-time 30 http://googleblog.blogspot.com/ >/dev/null 2>&1 || exit 0
         sleep 5
     done

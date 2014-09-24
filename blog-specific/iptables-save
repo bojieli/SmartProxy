@@ -57,7 +57,7 @@ COMMIT
 -A PREROUTING -p icmp -m mark --mark 0x0 -j MARK --set-xmark 0x1f90/0xffffffff
 -A PREROUTING -m mark --mark 0x0 -j MARK --set-xmark 0x2382/0xffffffff
 -A OUTPUT -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
--A OUTPUT -p tcp -m mark --mark 0x0 -m multiport --dports 80,443 -j MARK --set-mark 53
+-A OUTPUT -p tcp -m mark --mark 0x0 -m multiport --dports 25,80,443 -j MARK --set-mark 53
 -A OUTPUT -p udp -m mark --mark 0x0 --dport 53 -j MARK --set-mark 53
 -A OUTPUT -j CONNMARK --save-mark
 COMMIT

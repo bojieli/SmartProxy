@@ -34,16 +34,10 @@ function set_route() {
 
 # set up IP-in-IP tunnel
 ip tunnel del tunipip
-ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.95.110
+ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.93.95
 ip link set tunipip up
-ip addr add 10.38.160.99/32 dev tunipip
-ip route replace 10.38.95.110/32 dev tunipip
-
-ip tunnel del tunipip2
-ip tunnel add tunipip2 mode ipip local 202.141.176.99 remote 202.141.176.110
-ip link set tunipip2 up
-ip addr add 10.141.176.99/32 dev tunipip2
-ip route replace 10.141.176.110/32 dev tunipip2
+ip addr add 10.0.160.99/32 dev tunipip
+ip route replace 10.0.93.95/32 dev tunipip
 
 # define routing table preference (high to low)
 route_pref="mirrors_mobile ustc cernet mobile telecom chnroutes whitelist"
@@ -58,12 +52,11 @@ blocked=$counter
 
 # generate routing tables
 cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
-cat USTC.txt | set_route 202.141.160.126 $ustc
+cat USTC.txt | set_route 202.141.176.126 $ustc
+cat CERNET.txt | set_route 10.0.93.95 $cernet
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 #cat CMCC.txt | set_route 202.141.176.126 $mobile
 echo "" | set_route 202.141.176.126 $mobile
-#cat CERNET.txt | set_route 10.38.95.110 $cernet
-echo "" | set_route 10.38.95.110 $cernet
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat paper-sites.txt | set_route 202.141.176.126 $whitelist
 

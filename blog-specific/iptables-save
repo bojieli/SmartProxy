@@ -18,6 +18,8 @@
 -A PREROUTING -d 202.141.176.99/32 -p udp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
 -A PREROUTING -d 202.38.64.0/24 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
 -A PREROUTING -d 192.168.0.0/16 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
+-A PREROUTING -d 172.16.0.0/12 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
+-A PREROUTING -d 127.0.0.0/8 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
 -A PREROUTING -d 202.141.160.99/32 -p tcp -m tcp --dport 21 -j REDIRECT --to-ports 2121
 -A PREROUTING -d 202.141.176.99/32 -p tcp -m tcp --dport 21 -j REDIRECT --to-ports 2121
 -A POSTROUTING -d 114.214.197.140/32 -p tcp -m tcp --dport 25565:25567 -j SNAT --to-source 202.141.160.99

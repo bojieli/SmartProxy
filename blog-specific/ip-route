@@ -9,7 +9,7 @@ IPV6_SOCKS_SCRIPT=$(dirname $0)/ipv6-tun2socks
 IPV6_GRE_TUNNEL_ENABLE=${IPV6_GRE_TUNNEL_ENABLE:-true}
 IPV6_BLACKLIST_ENABLE=${IPV6_BLACKLIST_ENABLE:-true}
 
-DEFAULT_ABROAD_TUNNEL=${DEFAULT_ABROAD_TUNNEL:-false}
+DEFAULT_ABROAD_TUNNEL=${DEFAULT_ABROAD_TUNNEL:-true}
 BLOCKED_IP_ABROAD_TUNNEL=${BLOCKED_IP_ABROAD_TUNNEL:-true}
 TCP_RESTRICT_PORTS=${TCP_RESTRICT_PORTS:-22,23,53,80,443,110,143,993,995}
 UDP_RESTRICT_PORTS=${UDP_RESTRICT_PORTS:-53}
@@ -49,6 +49,8 @@ for i in $route_pref; do
 done
 counter=$(($counter+1))
 blocked=$counter
+counter=$(($counter+1))
+blocked2=$counter
 
 # generate routing tables
 cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
@@ -170,23 +172,31 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
     if $DEFAULT_ABROAD_TUNNEL || $BLOCKED_IP_ABROAD_TUNNEL; then
         gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
+        gre_replace huodong $localip 128.199.173.157 $gw 10.0.4.2/30
         if $DEFAULT_ABROAD_TUNNEL; then
             echo "Default abroad IPv4 via tunnel"
             ip route replace default via 10.0.2.1 table $blocked
+            ip route replace default via 10.0.4.1 table $blocked2
         else
             echo "Blocked IPv4 via tunnel"
             cat $CONF_DIR/blocked-ip.txt | set_route 10.0.2.1 $blocked
+            cat $CONF_DIR/blocked-ip.txt | set_route 10.0.4.1 $blocked2
         fi
 
         do_tunnel_restrict_ports iptables
         # clear rules
-        ip rule del pref $pref_restrict_port 2>/dev/null
-        ip rule del pref $pref_restrict_port 2>/dev/null
+        for i in {1..10}; do
+            ip rule del pref $pref_restrict_port 2>/dev/null
+        done
+        # add new rules
         ip rule add fwmark 8080 lookup $blocked pref $pref_restrict_port
+        ip rule add fwmark 8081 lookup $blocked2 pref $pref_restrict_port
         # special ip rule for local outbound DNS traffic:
         # dport 53 to abroad IP always go through VPN
         ip route replace default via 10.0.2.1 table 53
+        ip route replace default via 10.0.4.1 table 54
         ip rule add fwmark 53 lookup 53 pref $pref_restrict_port
+        ip rule add fwmark 54 lookup 54 pref $pref_restrict_port
     else
         ip route flush table $blocked
     fi

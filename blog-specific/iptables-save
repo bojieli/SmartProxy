@@ -64,6 +64,7 @@ COMMIT
 -A OUTPUT -m mark ! --mark 0x0 -j ACCEPT
 -A OUTPUT -p tcp -m mark --mark 0x0 -m multiport --dports 25,80,443 -j MARK --set-mark 53
 -A OUTPUT -p udp -m mark --mark 0x0 --dport 53 -j MARK --set-mark 53
+-A OUTPUT -m mark --mark 53 -m statistic --mode nth --every 2 --packet 0 -j MARK --set-mark 54
 -A OUTPUT -m mark --mark 53 -m statistic --mode nth --every 2 --packet 1 -j MARK --set-mark 54
 -A OUTPUT -j CONNMARK --save-mark
 COMMIT

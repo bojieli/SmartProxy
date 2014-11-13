@@ -51,6 +51,8 @@ COMMIT
 -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
 -A PREROUTING -d 202.141.160.99/32 -i eth0 -j MARK --set-xmark 0xa0/0xffffffff
 -A PREROUTING -d 202.141.176.99/32 -i eth1 -j MARK --set-xmark 0xb0/0xffffffff
+-A PREROUTING -d 202.141.176.112/32 -i eth1 -j MARK --set-xmark 0xb0/0xffffffff
+-A PREROUTING -d 202.141.176.113/32 -i eth1 -j MARK --set-xmark 0xb0/0xffffffff
 -A PREROUTING -d 10.0.2.2/32 -i do2 -p udp -m udp --dport 1194 -j MARK --set-xmark 0x4aa/0xffffffff
 -A PREROUTING -d 10.0.2.2/32 -i do2 -p tcp -m tcp --dport 1194 -j MARK --set-xmark 0x4aa/0xffffffff
 -A PREROUTING -d 10.0.2.2/32 -i do2 -p tcp -m tcp --dport 80 -j MARK --set-xmark 0x4aa/0xffffffff

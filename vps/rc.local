@@ -17,7 +17,7 @@ local_ipv6=$(ip addr show dev eth0 | grep global | awk '{if($1=="inet6") print $
 ip tunnel add blog mode gre remote 202.141.176.99 local $local_ip ttl 255
 ip link set blog up
 ip addr add 10.0.$subnet.1/30 dev blog
-$ipv6 && ip addr add fdfe:dcba:9876::$2:1/112 dev blog
+$ipv6 && ip addr add fdfe:dcba:9876::$subnet:1/112 dev blog
 
 iptables -t mangle -A PREROUTING -j CONNMARK --restore-mark
 iptables -t mangle -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT

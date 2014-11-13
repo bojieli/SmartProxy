@@ -1,0 +1,73 @@
+#!/bin/bash
+
+subnet=2
+ipv6=false
+revproxy=false
+start_collectd=false
+
+# clear rules
+iptables -t mangle -F
+iptables -t nat -F
+ip6tables -t mangle -F
+ip6tables -t nat -F
+
+local_ip=$(ip addr show dev eth0 | awk '{if($1=="inet") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
+local_ipv6=$(ip addr show dev eth0 | grep global | awk '{if($1=="inet6") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
+
+ip tunnel add blog mode gre remote 202.141.176.99 local $local_ip ttl 255
+ip link set blog up
+ip addr add 10.0.$subnet.1/30 dev blog
+$ipv6 && ip addr add fdfe:dcba:9876::$2:1/112 dev blog
+
+iptables -t mangle -A PREROUTING -j CONNMARK --restore-mark
+iptables -t mangle -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
+iptables -t mangle -A PREROUTING -i blog -j MARK --set-mark 99
+iptables -t mangle -A PREROUTING -i eth0 ! -d $local_ip -j DROP  # block free-riding
+$revproxy && iptables -t mangle -A PREROUTING -i eth0 -p tcp --dport 1194 -j MARK --set-mark 1194
+$revproxy && iptables -t mangle -A PREROUTING -i eth0 -p udp --dport 1194 -j MARK --set-mark 1194
+$revproxy && iptables -t mangle -A PREROUTING -i eth0 -p tcp --dport 80 -j MARK --set-mark 1194
+$revproxy && iptables -t mangle -A PREROUTING -i eth0 -p tcp --dport 443 -j MARK --set-mark 1194
+iptables -t mangle -A PREROUTING -j CONNMARK --save-mark
+
+ip route replace default via 10.0.$subnet.2 table 1000
+ip rule add iif eth0 fwmark 99 lookup 1000
+$revproxy && ip rule add iif eth0 fwmark 1194 lookup 1000
+
+$revproxy && iptables -t nat -A PREROUTING -m mark --mark 1194 -j DNAT --to-destination 10.0.$subnet.2
+iptables -t nat -A POSTROUTING -m mark --mark 99 -o eth0 -j MASQUERADE
+
+if $ipv6; then
+ip6tables -t mangle -A PREROUTING -j CONNMARK --restore-mark
+ip6tables -t mangle -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
+ip6tables -t mangle -A PREROUTING -i blog -j MARK --set-mark 99
+ip6tables -t mangle -A PREROUTING -i eth0 ! -d $local_ipv6 -j DROP  # block free-riding
+$revproxy && ip6tables -t mangle -A PREROUTING -i eth0 -p tcp --dport 80 -j MARK --set-mark 1194
+$revproxy && ip6tables -t mangle -A PREROUTING -i eth0 -p tcp --dport 443 -j MARK --set-mark 1194
+ip6tables -t mangle -A PREROUTING -j CONNMARK --save-mark
+
+ip -6 route replace default via fdfe:dcba:9876::$subnet:2 table 1000
+ip -6 rule add iif eth0 fwmark 99 lookup 1000
+$revproxy && ip -6 rule add iif eth0 fwmark 1194 lookup 1000
+
+$revproxy && ip6tables -t nat -A PREROUTING -m mark --mark 1194 -j DNAT --to-destination fdfe:dcba:9876::$subnet:2
+ip6tables -t nat -A POSTROUTING -m mark --mark 99 -o eth0 -j MASQUERADE
+
+fi #endif ipv6
+
+iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+$ipv6 && ip6tables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+$ipv6 && echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
+echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
+echo 0 > /proc/sys/net/ipv4/conf/mirrors/rp_filter
+echo 0 > /proc/sys/net/ipv4/conf/blog/rp_filter
+echo 0 > /proc/sys/net/ipv4/conf/eth0/rp_filter
+echo 655360 >/proc/sys/net/nf_conntrack_max
+
+if $start_collectd; then
+    cd /srv/collectd-web
+    nohup python runserver.py &
+fi
+
+exit 0

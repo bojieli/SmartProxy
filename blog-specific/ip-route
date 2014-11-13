@@ -51,6 +51,8 @@ counter=$(($counter+1))
 blocked=$counter
 counter=$(($counter+1))
 blocked2=$counter
+counter=$(($counter+1))
+blocked3=$counter
 
 # generate routing tables
 cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
@@ -173,14 +175,17 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
     if $DEFAULT_ABROAD_TUNNEL || $BLOCKED_IP_ABROAD_TUNNEL; then
         gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
         gre_replace huodong $localip 128.199.173.157 $gw 10.0.4.2/30
+        gre_replace yfgao $localip 128.199.161.228 $gw 10.0.5.2/30
         if $DEFAULT_ABROAD_TUNNEL; then
             echo "Default abroad IPv4 via tunnel"
             ip route replace default via 10.0.2.1 table $blocked
             ip route replace default via 10.0.4.1 table $blocked2
+            ip route replace default via 10.0.5.1 table $blocked3
         else
             echo "Blocked IPv4 via tunnel"
             cat $CONF_DIR/blocked-ip.txt | set_route 10.0.2.1 $blocked
             cat $CONF_DIR/blocked-ip.txt | set_route 10.0.4.1 $blocked2
+            cat $CONF_DIR/blocked-ip.txt | set_route 10.0.5.1 $blocked3
         fi
 
         do_tunnel_restrict_ports iptables
@@ -191,12 +196,15 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
         # add new rules
         ip rule add fwmark 8080 lookup $blocked pref $pref_restrict_port
         ip rule add fwmark 8081 lookup $blocked2 pref $pref_restrict_port
+        ip rule add fwmark 8082 lookup $blocked3 pref $pref_restrict_port
         # special ip rule for local outbound DNS traffic:
         # dport 53 to abroad IP always go through VPN
         ip route replace default via 10.0.2.1 table 53
         ip route replace default via 10.0.4.1 table 54
+        ip route replace default via 10.0.5.1 table 55
         ip rule add fwmark 53 lookup 53 pref $pref_restrict_port
         ip rule add fwmark 54 lookup 54 pref $pref_restrict_port
+        ip rule add fwmark 55 lookup 55 pref $pref_restrict_port
     else
         ip route flush table $blocked
     fi

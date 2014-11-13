@@ -1,6 +1,6 @@
 server {
-        listen 8080 default_server;
-        listen [::]:8080 ipv6only=on default_server;
+        listen 8192 default_server;
+        listen [::]:8192 ipv6only=on default_server;
 
         root /usr/share/nginx/collectd-html;
         index index.html index.htm;

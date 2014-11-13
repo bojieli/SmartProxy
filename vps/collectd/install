@@ -10,10 +10,10 @@ git clone https://github.com/httpdss/collectd-web.git
 ## collectd will be running on port 8888
 
 wget https://git.ustclug.org/boj/smartproxy/raw/master/vps/collectd/nginx-vhost -O /etc/nginx/sites-enabled/collectd-web
-NGINX_ROOT=/usr/share/nginx/html
+NGINX_ROOT=/usr/share/nginx/collectd-html
 mkdir -p $NGINX_ROOT
 wget https://git.ustclug.org/boj/smartproxy/raw/master/vps/collectd/index.html -O $NGINX_ROOT/index.html
 hostname=$(hostname)
 sed -i "s/do2.bojieli.com/$hostname/g" $NGINX_ROOT/index.html
 
-## nginx will be running on port 8080
+## nginx will be running on port 8192

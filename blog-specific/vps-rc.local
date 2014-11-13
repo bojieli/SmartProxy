@@ -17,8 +17,8 @@ iptables -t nat -F
 ip6tables -t mangle -F
 ip6tables -t nat -F
 
-local_ip="128.199.170.5"
-local_ipv6="2400:6180:0:d0::30:8001/64"
+local_ip=$(ip addr show dev eth0 | awk '{if($1=="inet") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
+local_ipv6=$(ip addr show dev eth0 | grep global | awk '{if($1=="inet6") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
 
 ip tunnel add blog mode gre remote 202.141.176.99 local $local_ip ttl 255
 ip tunnel add mirrors mode gre remote 202.38.95.110 local $local_ip ttl 255

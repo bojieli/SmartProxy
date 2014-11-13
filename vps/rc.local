@@ -3,13 +3,13 @@
 subnet=2
 ipv6=false
 revproxy=false
-start_collectd=false
+start_collectd=true
 
 # clear rules
 iptables -t mangle -F
 iptables -t nat -F
-ip6tables -t mangle -F
-ip6tables -t nat -F
+$ipv6 && ip6tables -t mangle -F
+$ipv6 && ip6tables -t nat -F
 
 local_ip=$(ip addr show dev eth0 | awk '{if($1=="inet") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
 local_ipv6=$(ip addr show dev eth0 | grep global | awk '{if($1=="inet6") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
@@ -60,7 +60,6 @@ $ipv6 && ip6tables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --
 echo 1 > /proc/sys/net/ipv4/ip_forward
 $ipv6 && echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
 echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
-echo 0 > /proc/sys/net/ipv4/conf/mirrors/rp_filter
 echo 0 > /proc/sys/net/ipv4/conf/blog/rp_filter
 echo 0 > /proc/sys/net/ipv4/conf/eth0/rp_filter
 echo 655360 >/proc/sys/net/nf_conntrack_max

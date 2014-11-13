@@ -1,0 +1,20 @@
+server {
+        listen 8080 default_server;
+        listen [::]:8080 ipv6only=on default_server;
+
+        root /usr/share/nginx/collectd-html;
+        index index.html index.htm;
+
+        server_name localhost;
+
+        location / {
+                try_files $uri $uri/ /index.html;
+        }
+
+        location /collectd-web/ {
+                proxy_pass http://127.0.0.1:8888/;
+        }
+        location /cgi-bin/ {
+                proxy_pass http://127.0.0.1:8888/cgi-bin/;
+        }
+}

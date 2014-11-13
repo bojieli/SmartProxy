@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>VPS Traffic Stats</title>
+</head>
+<body>
+<table>
+<tr><th>Hour</th><th>Day</th></tr>
+<tr><td>
+<img src="cgi-bin/collection.modified.cgi?action=show_graph;plugin=interface;type=if_octets;plugin_instance=eth0;host=do2.bojieli.com;timespan=hour" />
+</td><td>
+<img src="cgi-bin/collection.modified.cgi?action=show_graph;plugin=interface;type=if_octets;plugin_instance=eth0;host=do2.bojieli.com;timespan=day" />
+</td></tr>
+<tr><th>Week</th><th>Month</th></tr>
+<tr><td>
+<img src="cgi-bin/collection.modified.cgi?action=show_graph;plugin=interface;type=if_octets;plugin_instance=eth0;host=do2.bojieli.com;timespan=week" />
+</td><td>
+<img src="cgi-bin/collection.modified.cgi?action=show_graph;plugin=interface;type=if_octets;plugin_instance=eth0;host=do2.bojieli.com;timespan=month" />
+</td></tr>
+</table>
+</body>
+</html>

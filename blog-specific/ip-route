@@ -128,6 +128,7 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv6 go through GRE tunnel"
     cat gre-tunnels.txt | while read name ip subnet options; do
         if [[ "$options" =~ "v6" ]]; then
+            echo "add v6 gre tunnel $name"
             gre_replace $name 202.141.176.99 $ip 202.141.176.126 fdfe:dcba:9876::$subnet:2/126
         fi
     done
@@ -153,7 +154,7 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
         done
     fi
     ip -6 route del 2000::/3    2>/dev/null
-    ip -6 route add 2000::/3 via fdfe:dcba:9876::1 dev do2
+    ip -6 route add 2000::/3 via fdfe:dcba:9876::2:1 dev do2
 else
     echo "Disable abroad IPv6"
     ip -6 route del 2000::/3    2>/dev/null
@@ -173,6 +174,7 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
     if $DEFAULT_ABROAD_TUNNEL || $BLOCKED_IP_ABROAD_TUNNEL; then
         cat gre-tunnels.txt | while read name ip subnet options; do
+            echo "add v4 gre tunnel $name"
             gre_replace $name $PUBLIC_IP $ip $PUBLIC_GW 10.0.$subnet.2/30
         done
         if $DEFAULT_ABROAD_TUNNEL; then

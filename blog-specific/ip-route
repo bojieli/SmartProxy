@@ -53,14 +53,16 @@ counter=$(($counter+1))
 blocked2=$counter
 counter=$(($counter+1))
 blocked3=$counter
+counter=$(($counter+1))
+blocked4=$counter
 
 # generate routing tables
 cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
 cat USTC.txt | set_route 202.141.160.126 $ustc
 cat CERNET.txt | set_route 10.0.93.95 $cernet
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
-#cat CMCC.txt | set_route 202.141.176.126 $mobile
-echo "" | set_route 202.141.176.126 $mobile
+cat CMCC.txt | set_route 202.141.176.126 $mobile
+#echo "" | set_route 202.141.176.126 $mobile
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat paper-sites.txt | set_route 202.141.176.126 $whitelist
 
@@ -88,8 +90,6 @@ cat chnroutes-v6.txt | while read prefix comment; do
 done
 ip -6 rule del from all lookup 10000 pref 10000 2>/dev/null
 ip -6 rule add from all lookup 10000 pref 10000
-
-popd >/dev/null
 
 function gre_replace() {
     tunnel=$1
@@ -124,7 +124,7 @@ function do_tunnel_restrict_ports() {
 if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
     echo "IPv6 tun2socks initializing"
     $IPV6_SOCKS_SCRIPT
-    cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+    cat blacklist-v6.txt | while read prefix comment; do
         ip -6 route add unreachable $prefix 2>/dev/null
     done
 elif $IPV6_GRE_TUNNEL_ENABLE; then
@@ -143,11 +143,11 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
     ip -6 rule add fwmark 53 lookup $blocked pref $pref_restrict_port
 
     if $IPV6_BLACKLIST_ENABLE; then
-        cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+        cat blacklist-v6.txt | while read prefix comment; do
             ip -6 route add unreachable $prefix 2>/dev/null
         done
     else
-        cat $CONF_DIR/blacklist-v6.txt | while read prefix comment; do
+        cat blacklist-v6.txt | while read prefix comment; do
             ip -6 route del unreachable $prefix 2>/dev/null
         done
     fi
@@ -168,7 +168,7 @@ if [ -x "$IPV4_SOCKS_SCRIPT" ] && $IPV4_SOCKS_ENABLE; then
         ip route replace default via 10.0.1.1
         ip route flush table $blocked
     else
-        cat $CONF_DIR/blocked-ip.txt | set_route 10.0.1.1 $blocked
+        cat blocked-ip.txt | set_route 10.0.1.1 $blocked
     fi
 elif $IPV4_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv4 go though GRE tunnel"
@@ -176,16 +176,19 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
         gre_replace do2 $localip 128.199.170.5 $gw 10.0.2.2/30
         gre_replace huodong $localip 128.199.173.157 $gw 10.0.4.2/30
         gre_replace yfgao $localip 128.199.161.228 $gw 10.0.5.2/30
+        gre_replace stephen $localip 128.199.211.154 $gw 10.0.6.2/30
         if $DEFAULT_ABROAD_TUNNEL; then
             echo "Default abroad IPv4 via tunnel"
             ip route replace default via 10.0.2.1 table $blocked
             ip route replace default via 10.0.4.1 table $blocked2
             ip route replace default via 10.0.5.1 table $blocked3
+            ip route replace default via 10.0.6.1 table $blocked4
         else
             echo "Blocked IPv4 via tunnel"
-            cat $CONF_DIR/blocked-ip.txt | set_route 10.0.2.1 $blocked
-            cat $CONF_DIR/blocked-ip.txt | set_route 10.0.4.1 $blocked2
-            cat $CONF_DIR/blocked-ip.txt | set_route 10.0.5.1 $blocked3
+            cat blocked-ip.txt | set_route 10.0.2.1 $blocked
+            cat blocked-ip.txt | set_route 10.0.4.1 $blocked2
+            cat blocked-ip.txt | set_route 10.0.5.1 $blocked3
+            cat blocked-ip.txt | set_route 10.0.6.1 $blocked4
         fi
 
         do_tunnel_restrict_ports iptables
@@ -197,14 +200,17 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
         ip rule add fwmark 8080 lookup $blocked pref $pref_restrict_port
         ip rule add fwmark 8081 lookup $blocked2 pref $pref_restrict_port
         ip rule add fwmark 8082 lookup $blocked3 pref $pref_restrict_port
+        ip rule add fwmark 8083 lookup $blocked4 pref $pref_restrict_port
         # special ip rule for local outbound DNS traffic:
         # dport 53 to abroad IP always go through VPN
         ip route replace default via 10.0.2.1 table 53
         ip route replace default via 10.0.4.1 table 54
         ip route replace default via 10.0.5.1 table 55
+        ip route replace default via 10.0.6.1 table 56
         ip rule add fwmark 53 lookup 53 pref $pref_restrict_port
         ip rule add fwmark 54 lookup 54 pref $pref_restrict_port
         ip rule add fwmark 55 lookup 55 pref $pref_restrict_port
+        ip rule add fwmark 56 lookup 56 pref $pref_restrict_port
     else
         ip route flush table $blocked
     fi
@@ -212,5 +218,7 @@ else
     echo "No available tunnel for abroad IP"
 fi
 ip route replace default via $gw
+
+popd >/dev/null
 
 exit 0

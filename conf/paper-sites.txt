@@ -12,6 +12,7 @@
 216.200.62.0/24    ;ebrary
 140.234.0.0/16     ;EBSCO
 198.81.200.0/24    ;sciencedirect
+23.58.235.0/24     ;sciencedirect
 82.109.207.14/32   ;emerald
 195.92.228.61/32   ;emerald
 208.99.166.224/27  ;IEEE
@@ -30,3 +31,4 @@
 63.164.11.0/24     ;Springer
 199.171.200.0/22   ;Wiley
 193.54.237.0/24    ;afst.cedram.org
+128.32.0.0/16      ;berkeley.edu

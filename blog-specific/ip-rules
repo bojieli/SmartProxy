@@ -5,7 +5,7 @@ ip link set eth1 up
 ip route replace 202.141.160.0/25 dev eth0 proto kernel scope link
 ip route replace 202.141.176.0/25 dev eth1 proto kernel scope link
 
-ip addr add 2001:da8:d800:f001::99 dev eth0
+ip route add 2001:da8:d800:f001::/64 dev eth0
 ip -6 route replace default via 2001:da8:d800:f001::1 dev eth0
 
 ip route replace default via 202.141.160.126 table 1000

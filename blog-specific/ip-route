@@ -35,10 +35,11 @@ function set_route() {
     (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route replace %s via $gw table $tableid\n\", \$1); }") | ip -batch -
 }
 
-# set up IP-in-IP tunnel
+echo "set up IP-in-IP tunnel..."
 ip tunnel del tunipip
 ip tunnel add tunipip mode ipip local 202.141.160.95 remote 202.38.93.95
 ip link set tunipip up
+ip addr flush dev tunipip
 ip addr add 10.0.160.99/32 dev tunipip
 ip route replace 10.0.93.95/32 dev tunipip
 
@@ -53,17 +54,17 @@ done
 counter=$(($counter+1))
 blocked=20000
 
-# generate routing tables
-cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
+echo "generate routing tables..."
+#cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
 cat USTC.txt | set_route 202.141.160.126 $ustc
-cat CERNET.txt | set_route 10.0.93.95 $cernet
+#cat CERNET.txt | set_route 10.0.93.95 $cernet
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 #cat CMCC.txt | set_route 202.141.176.126 $mobile
 echo "" | set_route 202.141.176.126 $mobile
 cat chnroutes.txt abroad-telecom.txt | set_route 202.141.160.126 $chnroutes
 cat paper-sites.txt | set_route 202.141.176.126 $whitelist
 
-# set up ip rule
+echo "set up ip rule..."
 counter=10000
 for i in $route_pref; do
     counter=$(($counter+1))
@@ -81,7 +82,7 @@ while true; do
     ip rule del from all lookup $counter pref $origpref
 done
 
-# IPv6 route
+echo "set up IPv6 route..."
 cat chnroutes-v6.txt | while read prefix comment; do
     ip -6 route add $prefix via 2001:da8:d800:f001::1 table 10000   2>/dev/null
 done
@@ -102,6 +103,7 @@ function gre_replace() {
         ip tunnel change $tunnel mode gre remote $real_remote local $real_local ttl 255
     fi
     ip link set $tunnel up
+    ip addr flush dev $tunnel
     ip addr add $virt_local dev $tunnel
 }
 

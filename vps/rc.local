@@ -14,7 +14,7 @@ $ipv6 && ip6tables -t nat -F
 local_ip=$(ip addr show dev eth0 | awk '{if($1=="inet") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
 local_ipv6=$(ip addr show dev eth0 | grep global | awk '{if($1=="inet6") print $2}' | awk 'BEGIN{FS="/"}{print $1}' | head -n 1)
 
-ip tunnel add blog mode gre remote 202.141.176.99 local $local_ip ttl 255
+ip tunnel add blog mode gre remote 202.141.176.95 local $local_ip ttl 255
 ip link set blog up
 ip addr add 10.0.$subnet.1/30 dev blog
 $ipv6 && ip addr add fdfe:dcba:9876::$subnet:1/112 dev blog

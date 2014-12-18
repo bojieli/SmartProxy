@@ -4,34 +4,34 @@
 :INPUT ACCEPT [1:129]
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
--A PREROUTING -d 202.38.64.59/32 -p tcp -m tcp -m multiport --dports 80,443 -j DNAT --to-destination 202.141.160.99
--A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 20080 -j DNAT --to-destination 202.38.70.100:30010
--A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 20022 -j DNAT --to-destination 202.38.70.100:20010
--A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 20021 -j DNAT --to-destination 202.38.70.100:30021
--A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 20020 -j DNAT --to-destination 202.38.70.100:30020
--A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 25000:25099 -j DNAT --to-destination 202.38.70.100
--A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 20443 -j DNAT --to-destination 202.38.70.100:30443
--A PREROUTING -d 202.141.160.99/32 -i eth0 -p tcp -m tcp --dport 25565:25567 -j DNAT --to-destination 114.214.197.140
--A PREROUTING -d 202.141.176.99/32 -i eth1 -p tcp -m tcp --dport 25565:25567 -j DNAT --to-destination 114.214.197.140
--A PREROUTING -d 202.141.160.99/32 -p tcp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
--A PREROUTING -d 202.141.160.99/32 -p udp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
--A PREROUTING -d 202.141.176.99/32 -p tcp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
--A PREROUTING -d 202.141.176.99/32 -p udp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
--A PREROUTING -d 202.38.64.0/24 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
--A PREROUTING -d 192.168.0.0/16 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
--A PREROUTING -d 172.16.0.0/12 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
--A PREROUTING -d 127.0.0.0/8 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.99
--A PREROUTING -d 202.141.160.99/32 -p tcp -m tcp --dport 21 -j REDIRECT --to-ports 2121
--A PREROUTING -d 202.141.176.99/32 -p tcp -m tcp --dport 21 -j REDIRECT --to-ports 2121
--A OUTPUT -d 202.38.64.59/32 -p tcp -m tcp -m multiport --dports 80,443 -j DNAT --to-destination 202.141.160.99
--A POSTROUTING -d 114.214.197.140/32 -p tcp -m tcp --dport 25565:25567 -j SNAT --to-source 202.141.160.99
+-A PREROUTING -d 202.38.64.59/32 -p tcp -m tcp -m multiport --dports 80,443 -j DNAT --to-destination 202.141.160.95
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -p tcp -m tcp --dport 20080 -j DNAT --to-destination 202.38.70.100:30010
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -p tcp -m tcp --dport 20022 -j DNAT --to-destination 202.38.70.100:20010
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -p tcp -m tcp --dport 20021 -j DNAT --to-destination 202.38.70.100:30021
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -p tcp -m tcp --dport 20020 -j DNAT --to-destination 202.38.70.100:30020
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -p tcp -m tcp --dport 25000:25099 -j DNAT --to-destination 202.38.70.100
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -p tcp -m tcp --dport 20443 -j DNAT --to-destination 202.38.70.100:30443
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -p tcp -m tcp --dport 25565:25567 -j DNAT --to-destination 114.214.197.140
+-A PREROUTING -d 202.141.176.95/32 -i eth1 -p tcp -m tcp --dport 25565:25567 -j DNAT --to-destination 114.214.197.140
+-A PREROUTING -d 202.141.160.95/32 -p tcp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
+-A PREROUTING -d 202.141.160.95/32 -p udp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
+-A PREROUTING -d 202.141.176.95/32 -p tcp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
+-A PREROUTING -d 202.141.176.95/32 -p udp -m multiport --dports 29000:29999 -j DNAT --to-destination 10.10.4.60
+-A PREROUTING -d 202.38.64.0/24 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.95
+-A PREROUTING -d 192.168.0.0/16 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.95
+-A PREROUTING -d 172.16.0.0/12 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.95
+-A PREROUTING -d 127.0.0.0/8 -p udp -m udp --dport 53 -j DNAT --to-destination 202.141.160.95
+-A PREROUTING -d 202.141.160.95/32 -p tcp -m tcp --dport 21 -j REDIRECT --to-ports 2121
+-A PREROUTING -d 202.141.176.95/32 -p tcp -m tcp --dport 21 -j REDIRECT --to-ports 2121
+-A OUTPUT -d 202.38.64.59/32 -p tcp -m tcp -m multiport --dports 80,443 -j DNAT --to-destination 202.141.160.95
+-A POSTROUTING -d 114.214.197.140/32 -p tcp -m tcp --dport 25565:25567 -j SNAT --to-source 202.141.160.95
 -A POSTROUTING -s 192.168.100.0/24 -o eth0 -j MASQUERADE
--A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 20010 -j SNAT --to-source 202.141.160.99
--A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30010 -j SNAT --to-source 202.141.160.99
--A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30020 -j SNAT --to-source 202.141.160.99
--A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30021 -j SNAT --to-source 202.141.160.99
--A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 25000:25099 -j SNAT --to-source 202.141.160.99
--A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30443 -j SNAT --to-source 202.141.160.99
+-A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 20010 -j SNAT --to-source 202.141.160.95
+-A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30010 -j SNAT --to-source 202.141.160.95
+-A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30020 -j SNAT --to-source 202.141.160.95
+-A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30021 -j SNAT --to-source 202.141.160.95
+-A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 25000:25099 -j SNAT --to-source 202.141.160.95
+-A POSTROUTING -d 202.38.70.100/32 -p tcp -m tcp --dport 30443 -j SNAT --to-source 202.141.160.95
 -A POSTROUTING -s 10.11.0.0/16 ! -d 10.11.0.0/16 -j MASQUERADE
 -A POSTROUTING -s 10.10.0.0/16 ! -d 10.10.0.0/16 -j MASQUERADE
 -A POSTROUTING -s 10.9.0.0/16 ! -d 10.9.0.0/16 -j MASQUERADE
@@ -64,8 +64,8 @@ COMMIT
 -A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 1 -j MARK --set-mark 5307
 -A PREROUTING -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
--A PREROUTING -d 202.141.160.99/32 -i eth0 -j MARK --set-xmark 0xa0/0xffffffff
--A PREROUTING -d 202.141.176.99/32 -i eth1 -j MARK --set-xmark 0xb0/0xffffffff
+-A PREROUTING -d 202.141.160.95/32 -i eth0 -j MARK --set-xmark 0xa0/0xffffffff
+-A PREROUTING -d 202.141.176.95/32 -i eth1 -j MARK --set-xmark 0xb0/0xffffffff
 -A PREROUTING -d 202.141.176.112/32 -i eth1 -j MARK --set-xmark 0xb0/0xffffffff
 -A PREROUTING -d 202.141.176.113/32 -i eth1 -j MARK --set-xmark 0xb0/0xffffffff
 -A PREROUTING -d 10.0.2.2/32 -i do2 -p udp -m udp --dport 1194 -j MARK --set-xmark 0x4aa/0xffffffff

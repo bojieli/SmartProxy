@@ -18,7 +18,7 @@ IPV4_SOCKS_SCRIPT=$(dirname $0)/ipv4-tun2socks
 IPV4_SOCKS_ENABLE=${IPV4_SOCKS_ENABLE:-false}
 IPV4_GRE_TUNNEL_ENABLE=${IPV4_GRE_TUNNEL_ENABLE:-true}
 
-PUBLIC_IP="202.141.176.99"
+PUBLIC_IP="202.141.176.95"
 PUBLIC_GW="202.141.176.126"
 
 ### END CONFIG ###
@@ -37,7 +37,7 @@ function set_route() {
 
 # set up IP-in-IP tunnel
 ip tunnel del tunipip
-ip tunnel add tunipip mode ipip local 202.141.160.99 remote 202.38.93.95
+ip tunnel add tunipip mode ipip local 202.141.160.95 remote 202.38.93.95
 ip link set tunipip up
 ip addr add 10.0.160.99/32 dev tunipip
 ip route replace 10.0.93.95/32 dev tunipip
@@ -129,7 +129,7 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
     cat gre-tunnels.txt | while read name ip subnet options; do
         if [[ "$options" =~ "v6" ]]; then
             echo "add v6 gre tunnel $name"
-            gre_replace $name 202.141.176.99 $ip 202.141.176.126 fdfe:dcba:9876::$subnet:2/126
+            gre_replace $name 202.141.176.95 $ip 202.141.176.126 fdfe:dcba:9876::$subnet:2/126
         fi
     done
     do_tunnel_restrict_ports ip6tables

@@ -103,8 +103,7 @@ function gre_replace() {
         ip tunnel change $tunnel mode gre remote $real_remote local $real_local ttl 255
     fi
     ip link set $tunnel up
-    ip addr flush dev $tunnel
-    ip addr add $virt_local dev $tunnel
+    ip addr add $virt_local dev $tunnel 2>/dev/null  # if duplicate, do not show warning
 }
 
 pref_restrict_port=$counter

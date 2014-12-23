@@ -4,7 +4,6 @@
 :FORWARD ACCEPT [8420:7047146]
 :OUTPUT ACCEPT [5:354]
 -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
--A FORWARD -p tcp --dport 25 -j REJECT --reject-with port-unreach
 # Google
 -A FORWARD -p tcp -d 2001:4860::/32 -m multiport --dports 80,443 -j REJECT --reject-with port-unreach
 -A FORWARD -p tcp -d 2404:6800::/32 -m multiport --dports 80,443 -j REJECT --reject-with port-unreach

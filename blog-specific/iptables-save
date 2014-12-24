@@ -30,14 +30,13 @@ COMMIT
 :OUTPUT ACCEPT [528194277:533930911952]
 :POSTROUTING ACCEPT [1061513569:995914874237]
 -N vpn_fwd_load_balance
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 0 -j MARK --set-mark 8002
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 1 -j MARK --set-mark 8007
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 2 -j MARK --set-mark 8007
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 3 -j MARK --set-mark 8002
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 4 -j MARK --set-mark 8007
+-A vpn_fwd_load_balance -m statistic --mode nth --every 3 --packet 0 -j MARK --set-mark 8002
+-A vpn_fwd_load_balance -m statistic --mode nth --every 3 --packet 1 -j MARK --set-mark 8006
+-A vpn_fwd_load_balance -m statistic --mode nth --every 3 --packet 2 -j MARK --set-mark 8009
 -N vpn_local_load_balance
--A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 0 -j MARK --set-mark 5302
--A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 1 -j MARK --set-mark 5307
+-A vpn_local_load_balance -m statistic --mode nth --every 3 --packet 0 -j MARK --set-mark 5302
+-A vpn_local_load_balance -m statistic --mode nth --every 3 --packet 1 -j MARK --set-mark 5306
+-A vpn_local_load_balance -m statistic --mode nth --every 3 --packet 2 -j MARK --set-mark 5309
 -A PREROUTING -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
 -A PREROUTING -d 202.141.160.95/32 -i eth0 -j MARK --set-xmark 0xa0/0xffffffff
@@ -46,6 +45,10 @@ COMMIT
 -A PREROUTING -d 10.0.2.2/32 -i do2 -p tcp -m tcp --dport 1194 -j MARK --set-xmark 0x4aa/0xffffffff
 -A PREROUTING -d 10.0.2.2/32 -i do2 -p tcp -m tcp --dport 80 -j MARK --set-xmark 0x4aa/0xffffffff
 -A PREROUTING -d 10.0.2.2/32 -i do2 -p tcp -m tcp --dport 443 -j MARK --set-xmark 0x4aa/0xffffffff
+-A PREROUTING -d 10.0.9.2/32 -i yfgao-do -p udp -m udp --dport 1194 -j MARK --set-xmark 0x4ab/0xffffffff
+-A PREROUTING -d 10.0.9.2/32 -i yfgao-do -p tcp -m tcp --dport 1194 -j MARK --set-xmark 0x4ab/0xffffffff
+-A PREROUTING -d 10.0.9.2/32 -i yfgao-do -p tcp -m tcp --dport 80   -j MARK --set-xmark 0x4ab/0xffffffff
+-A PREROUTING -d 10.0.9.2/32 -i yfgao-do -p tcp -m tcp --dport 443  -j MARK --set-xmark 0x4ab/0xffffffff
 -A PREROUTING -p tcp -m mark --mark 0x0 -m multiport --dports 22,23,53,80,443,110,143,993,995 -j vpn_fwd_load_balance
 -A PREROUTING -p udp -m mark --mark 0x0 -m multiport --dports 53 -j vpn_fwd_load_balance
 -A PREROUTING -p icmp -m mark --mark 0x0 -j vpn_fwd_load_balance

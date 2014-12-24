@@ -32,5 +32,7 @@ COMMIT
 -A PREROUTING -p icmp -m mark --mark 0x0 -j MARK --set-xmark 0x1f90/0xffffffff
 -A PREROUTING -m mark --mark 0x0 -j MARK --set-xmark 0x2382/0xffffffff
 -A OUTPUT -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
+-A OUTPUT -m mark --mark 0x0 -j MARK --set-mark 0xdead
+-A OUTPUT -j CONNMARK --save-mark
 COMMIT
 # Completed on Fri Aug 22 00:43:42 2014

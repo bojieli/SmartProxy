@@ -53,8 +53,9 @@ COMMIT
 -A PREROUTING -j CONNMARK --save-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A OUTPUT -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A OUTPUT -m mark ! --mark 0x0 -j ACCEPT
--A OUTPUT -p tcp -m mark --mark 0x0 -m multiport --dports 25,80,443 -j vpn_local_load_balance
+-A OUTPUT -p tcp -m mark --mark 0x0 -m multiport --dports 80,443 -j vpn_local_load_balance
 -A OUTPUT -p udp -m mark --mark 0x0 --dport 53 -j vpn_local_load_balance
+-A OUTPUT -m mark --mark 0x0 -j MARK --set-mark 0xdead
 -A OUTPUT -j CONNMARK --save-mark
 COMMIT
 # Completed on Tue Aug 26 20:44:01 2014

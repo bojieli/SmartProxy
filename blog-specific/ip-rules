@@ -22,7 +22,13 @@ ip rule add from all lookup 1002 pref 2000
 ip route replace default via 10.0.2.1 table 1003
 ip rule add fwmark 1194 lookup 1003 pref 2999
 
-ip -6 route replace default via fdfe:dcba:9876::1 table 1003
+ip route replace default via 10.0.9.1 table 1004
+ip rule add fwmark 1195 lookup 1004 pref 2999
+
+ip -6 route replace default via fdfe:dcba:9876::2:1 table 1003
 ip -6 rule add fwmark 1194 lookup 1003 pref 2999
+
+ip -6 route replace default via fdfe:dcba:9876::9:1 table 1004
+ip -6 rule add fwmark 1195 lookup 1004 pref 2999
 
 exit 0

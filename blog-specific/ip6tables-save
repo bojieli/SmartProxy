@@ -25,6 +25,7 @@ COMMIT
 :POSTROUTING ACCEPT [8425:7047500]
 -A PREROUTING -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
+-A PREROUTING -d 2001:da8:d800:f001:202:141:160:95/128 -i eth0 -j MARK --set-mark 95
 -A PREROUTING -d fdfe:dcba:9876::2:2/128 -i do2 -p tcp -m tcp --dport 80 -j MARK --set-xmark 0x4aa/0xffffffff
 -A PREROUTING -d fdfe:dcba:9876::2:2/128 -i do2 -p tcp -m tcp --dport 443 -j MARK --set-xmark 0x4aa/0xffffffff
 -A PREROUTING -d fdfe:dcba:9876::9:2/128 -i yfgao-do -p tcp -m tcp --dport 80 -j MARK --set-xmark 0x4ab/0xffffffff

@@ -35,6 +35,7 @@ COMMIT
 -A PREROUTING -p icmpv6 -m mark --mark 0x0 -j MARK --set-xmark 0x1f90/0xffffffff
 -A PREROUTING -m mark --mark 0x0 -j MARK --set-xmark 0x2382/0xffffffff
 -A PREROUTING -j CONNMARK --save-mark --nfmask 0xffffffff --ctmask 0xffffffff
+-A OUTPUT -p icmpv6 -j ACCEPT
 -A OUTPUT -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A OUTPUT -m mark --mark 0x0 -j MARK --set-mark 0xdead
 -A OUTPUT -j CONNMARK --save-mark

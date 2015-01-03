@@ -50,7 +50,7 @@ COMMIT
 -A PREROUTING -d 10.0.9.2/32 -i yfgao-do -p tcp -m tcp --dport 1194 -j MARK --set-xmark 0x4ab/0xffffffff
 -A PREROUTING -d 10.0.9.2/32 -i yfgao-do -p tcp -m tcp --dport 80   -j MARK --set-xmark 0x4ab/0xffffffff
 -A PREROUTING -d 10.0.9.2/32 -i yfgao-do -p tcp -m tcp --dport 443  -j MARK --set-xmark 0x4ab/0xffffffff
--A PREROUTING -p tcp -m mark --mark 0x0 -m multiport --dports 22,23,25,53,80,443,110,143,993,995 -j vpn_fwd_load_balance
+-A PREROUTING -p tcp -m mark --mark 0x0 -m multiport --dports 22,23,25,53,80,443,110,143,873,993,995 -j vpn_fwd_load_balance
 -A PREROUTING -p udp -m mark --mark 0x0 -m multiport --dports 53 -j vpn_fwd_load_balance
 -A PREROUTING -p icmp -m mark --mark 0x0 -j vpn_fwd_load_balance
 -A PREROUTING -m mark --mark 0x0 -j MARK --set-xmark 0x2382/0xffffffff

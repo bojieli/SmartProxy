@@ -30,7 +30,7 @@ COMMIT
 -A PREROUTING -d fdfe:dcba:9876::2:2/128 -i do2 -p tcp -m tcp --dport 443 -j MARK --set-xmark 0x4aa/0xffffffff
 -A PREROUTING -d fdfe:dcba:9876::9:2/128 -i yfgao-do -p tcp -m tcp --dport 80 -j MARK --set-xmark 0x4ab/0xffffffff
 -A PREROUTING -d fdfe:dcba:9876::9:2/128 -i yfgao-do -p tcp -m tcp --dport 443 -j MARK --set-xmark 0x4ab/0xffffffff
--A PREROUTING -p tcp -m mark --mark 0x0 -m multiport --dports 22,23,25,53,80,443,110,143,993,995 -j MARK --set-xmark 0x1f90/0xffffffff
+-A PREROUTING -p tcp -m mark --mark 0x0 -m multiport --dports 22,23,25,53,80,443,110,143,873,993,995 -j MARK --set-xmark 0x1f90/0xffffffff
 -A PREROUTING -p udp -m mark --mark 0x0 -m multiport --dports 53 -j MARK --set-xmark 0x1f90/0xffffffff
 -A PREROUTING -p icmpv6 -m mark --mark 0x0 -j MARK --set-xmark 0x1f90/0xffffffff
 -A PREROUTING -m mark --mark 0x0 -j MARK --set-xmark 0x2382/0xffffffff

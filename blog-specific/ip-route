@@ -11,8 +11,6 @@ IPV6_BLACKLIST_ENABLE=${IPV6_BLACKLIST_ENABLE:-false}
 
 DEFAULT_ABROAD_TUNNEL=${DEFAULT_ABROAD_TUNNEL:-true}
 BLOCKED_IP_ABROAD_TUNNEL=${BLOCKED_IP_ABROAD_TUNNEL:-true}
-TCP_RESTRICT_PORTS=${TCP_RESTRICT_PORTS:-22,23,25,53,80,443,110,143,993,995}
-UDP_RESTRICT_PORTS=${UDP_RESTRICT_PORTS:-53}
 
 IPV4_SOCKS_SCRIPT=$(dirname $0)/ipv4-tun2socks
 IPV4_SOCKS_ENABLE=${IPV4_SOCKS_ENABLE:-false}
@@ -109,16 +107,6 @@ function gre_replace() {
 pref_restrict_port=$counter
 counter=$(($counter+1))
 
-function do_tunnel_restrict_ports() {
-    cmd=$1
-    for j in "-D" "-A"; do
-        $1 -t mangle $j PREROUTING -m mark --mark 0 -p tcp -m multiport --dports $TCP_RESTRICT_PORTS -j MARK --set-mark 8080
-        $1 -t mangle $j PREROUTING -m mark --mark 0 -p udp -m multiport --dports $UDP_RESTRICT_PORTS -j MARK --set-mark 8080
-        $1 -t mangle $j PREROUTING -m mark --mark 0 -p icmp -j MARK --set-mark 8080
-        $1 -t mangle $j PREROUTING -m mark --mark 0 -j MARK --set-mark 9090
-    done
-}
-
 if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
     echo "IPv6 tun2socks initializing"
     $IPV6_SOCKS_SCRIPT
@@ -133,7 +121,6 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
             gre_replace $name 202.141.176.95 $ip 202.141.176.126 fdfe:dcba:9876::$subnet:2/126
         fi
     done
-    do_tunnel_restrict_ports ip6tables
     # clear rules
     ip -6 rule del pref $pref_restrict_port 2>/dev/null
     ip -6 rule del pref $pref_restrict_port 2>/dev/null
@@ -190,7 +177,6 @@ elif $IPV4_GRE_TUNNEL_ENABLE; then
             done
         fi
 
-        do_tunnel_restrict_ports iptables
         # clear rules
         while true; do
             ip rule del pref $pref_restrict_port 2>/dev/null || break

@@ -9,7 +9,7 @@ function getgw() {
 gw=$(getgw)
 [ -z "$gw" ] && exit 1
 
-if [ "$gw" = "10.0.2.1" ]; then
+if [ "$gw" = "10.0.3.1" ]; then
 # tunnel is enabled
     # if fail for all 5 trials...
     for i in {1..5}; do
@@ -25,10 +25,7 @@ if [ "$gw" = "10.0.2.1" ]; then
             curl -4 --connect-timeout 10 --max-time 30 http://googleblog.blogspot.com/ >/dev/null 2>&1 && exit 0
         done
 
-        # switch off default route from tunnel
-        export IPV6_GRE_TUNNEL_ENABLE=false
-        export IPV4_GRE_TUNNEL_ENABLE=false
-        output=$(./ip-route)
+        ip route replace default via 202.141.176.126 dev eth1
         /etc/init.d/bind9 restart  ## clean DNS negative cache
         mutt -s "VPN tunnel test failed" -- "servmon@blog.ustc.edu.cn" <<EOF
 Tunnel switched off.
@@ -46,11 +43,8 @@ else
         sleep 5
     done
     # in case other probes have switched on the tunnel... double check
-    if [ "$(getgw)" != "10.0.2.1" ]; then
-        # switch on default route via tunnel
-        export IPV6_GRE_TUNNEL_ENABLE=true
-        export IPV4_GRE_TUNNEL_ENABLE=true
-        output=$(./ip-route)
+    if [ "$(getgw)" != "10.0.3.1" ]; then
+        ip route replace default via 10.0.3.1 dev do2
         /etc/init.d/bind9 restart  ## clean DNS cache which may have been polluted
         mutt -s "VPN tunnel recovered" -- "servmon@blog.ustc.edu.cn" <<EOF
 Tunnel switched on.

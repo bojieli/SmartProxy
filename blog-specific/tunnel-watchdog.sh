@@ -34,11 +34,12 @@ if [ "$gw" = "10.0.2.1" ]; then
 Tunnel switched off.
 Output: $output
 EOF
-        # do not give up! try it again
-        [ -x "./try-reboot-vps" ] && ./try-reboot-vps
     fi
 else
 # tunnel is disabled
+    # try reboot vps dirst!
+    [ -x "./try-reboot-vps" ] && ./try-reboot-vps
+
     # if succeed for all 5 trials...
     for i in {1..5}; do
         curl --interface do2 -4 --connect-timeout 10 --max-time 30 http://googleblog.blogspot.com/ >/dev/null 2>&1 || exit 0

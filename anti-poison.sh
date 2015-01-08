@@ -1,9 +1,9 @@
 #/bin/sh
-iptables -N anti_poison
+iptables -N anti_poison 2>/dev/null
 iptables -F anti_poison
-iptables -D INPUT -p udp --sport 53 -j anti_poison
+iptables -D INPUT -p udp --sport 53 -j anti_poison 2>/dev/null
 iptables -I INPUT -p udp --sport 53 -j anti_poison
-iptables -D FORWARD -p udp --sport 53 -j anti_poison
+iptables -D FORWARD -p udp --sport 53 -j anti_poison 2>/dev/null
 iptables -I FORWARD -p udp --sport 53 -j anti_poison
 iptables -I anti_poison -m string --algo bm --hex-string "|4A7D7F66|" -j DROP
 iptables -I anti_poison -m string --algo bm --hex-string "|4A7D9B66|" -j DROP

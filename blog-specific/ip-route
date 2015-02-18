@@ -7,7 +7,7 @@ CONF_DIR=$(dirname $0)/../conf
 IPV6_SOCKS_ENABLE=${IPV6_SOCKS_ENABLE:-false}
 IPV6_SOCKS_SCRIPT=$(dirname $0)/ipv6-tun2socks
 IPV6_GRE_TUNNEL_ENABLE=${IPV6_GRE_TUNNEL_ENABLE:-true}
-IPV6_BLACKLIST_ENABLE=${IPV6_BLACKLIST_ENABLE:-false}
+IPV6_BLACKLIST_ENABLE=${IPV6_BLACKLIST_ENABLE:-true}
 
 DEFAULT_ABROAD_TUNNEL=${DEFAULT_ABROAD_TUNNEL:-true}
 BLOCKED_IP_ABROAD_TUNNEL=${BLOCKED_IP_ABROAD_TUNNEL:-true}
@@ -33,6 +33,17 @@ function set_route() {
     (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route replace %s via $gw table $tableid\n\", \$1); }") | ip -batch -
 }
 
+function disable_route() {
+    tableid=$1
+    (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route add unreachable %s table $tableid\n\", \$1); }") | ip -batch -
+}
+
+function disable_route6() {
+    tableid=$1
+    (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route add unreachable %s table $tableid\n\", \$1); }") | ip -6 -batch -
+}
+
+echo "set up IP-in-IP tunnel..."
 echo "set up IP-in-IP tunnel..."
 ip tunnel del tunipip
 ip tunnel add tunipip mode ipip local 202.141.160.95 remote 202.38.93.95
@@ -54,7 +65,7 @@ blocked=20000
 
 echo "generate routing tables..."
 #cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
-cat USTC.txt | set_route 202.141.160.126 $ustc
+cat USTC.txt | set_route 202.141.176.126 $ustc
 #cat CERNET.txt | set_route 10.0.93.95 $cernet
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 #cat CMCC.txt | set_route 202.141.176.126 $mobile
@@ -110,9 +121,6 @@ counter=$(($counter+1))
 if [ -x "$IPV6_SOCKS_SCRIPT" ] && $IPV6_SOCKS_ENABLE; then
     echo "IPv6 tun2socks initializing"
     $IPV6_SOCKS_SCRIPT
-    cat blacklist-v6.txt | while read prefix comment; do
-        ip -6 route add unreachable $prefix 2>/dev/null
-    done
 elif $IPV6_GRE_TUNNEL_ENABLE; then
     echo "Abroad IPv6 go through GRE tunnel"
     cat gre-tunnels.txt | while read name ip subnet options; do
@@ -121,28 +129,27 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
             gre_replace $name 202.141.176.95 $ip 202.141.176.126 fdfe:dcba:9876::$subnet:2/126
         fi
     done
+
+    # table $blocked will be flushed. default gateway should be added after.
+    if $IPV6_BLACKLIST_ENABLE; then
+    	cat blacklist-v6.txt | disable_route6 $blocked
+    else
+    	ip -6 flush table $blocked
+    fi
+
     # clear rules
     ip -6 rule del pref $pref_restrict_port 2>/dev/null
     ip -6 rule del pref $pref_restrict_port 2>/dev/null
 
-    ipv6_gw="2001:da8:d800:f001::1"
-    ip -6 route replace default via $ipv6_gw table $blocked
+    ipv6_gw="fdfe:dcba:9876::10:1"
+    ip -6 route add default via $ipv6_gw table $blocked
     ip -6 rule add fwmark 8080 lookup $blocked pref $pref_restrict_port
     # special ip rule for local outbound DNS traffic:
     # dport 53 to abroad IP always go through VPN
     ip -6 rule add fwmark 53 lookup $blocked pref $pref_restrict_port
 
-    if $IPV6_BLACKLIST_ENABLE; then
-        cat blacklist-v6.txt | while read prefix comment; do
-            ip -6 route add unreachable $prefix 2>/dev/null
-        done
-    else
-        cat blacklist-v6.txt | while read prefix comment; do
-            ip -6 route del unreachable $prefix 2>/dev/null
-        done
-    fi
     ip -6 route del 2000::/3    2>/dev/null
-    ip -6 route add 2000::/3 via fdfe:dcba:9876::2:1 dev do2
+    ip -6 route add 2000::/3 via fdfe:dcba:9876::10:1 dev do
 else
     echo "Disable abroad IPv6"
     ip -6 route del 2000::/3    2>/dev/null

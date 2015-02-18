@@ -40,7 +40,6 @@ if $ipv6; then
 ip6tables -t mangle -A PREROUTING -j CONNMARK --restore-mark
 ip6tables -t mangle -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
 ip6tables -t mangle -A PREROUTING -i blog -j MARK --set-mark 99
-ip6tables -t mangle -A PREROUTING -i eth0 ! -d $local_ipv6 -j DROP  # block free-riding
 $revproxy && ip6tables -t mangle -A PREROUTING -i eth0 -p tcp --dport 80 -j MARK --set-mark 1194
 $revproxy && ip6tables -t mangle -A PREROUTING -i eth0 -p tcp --dport 443 -j MARK --set-mark 1194
 ip6tables -t mangle -A PREROUTING -j CONNMARK --save-mark

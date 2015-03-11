@@ -19,7 +19,6 @@
 140.98.0.0/16      ;IEEE
 167.68.0.0/16      ;INSPEC
 62.50.9.0/24       ;IOP
-184.50.85.0/24     ;Nature (Akamai)
 65.202.222.0/24    ;OSA
 193.132.48.0/23    ;Oxford Online Journals
 193.67.160.0/21    ;Oxford Online Journals (highwire)

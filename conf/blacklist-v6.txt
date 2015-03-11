@@ -3,4 +3,4 @@
 2607:F8B0::/32      ;Google
 2620:0:1C00::/40    ;Facebook
 2A03:2880::/32      ;Facebook
-2620:0:860::/46     ;Wikipedia
+;2620:0:860::/46     ;Wikipedia

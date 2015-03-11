@@ -7,7 +7,8 @@ CONF_DIR=$(dirname $0)/../conf
 IPV6_SOCKS_ENABLE=${IPV6_SOCKS_ENABLE:-false}
 IPV6_SOCKS_SCRIPT=$(dirname $0)/ipv6-tun2socks
 IPV6_GRE_TUNNEL_ENABLE=${IPV6_GRE_TUNNEL_ENABLE:-true}
-IPV6_BLACKLIST_ENABLE=${IPV6_BLACKLIST_ENABLE:-true}
+# IPv6 blacklist only for HTTP/HTTPS, use ip6tables instead
+IPV6_BLACKLIST_ENABLE=${IPV6_BLACKLIST_ENABLE:-false}
 
 DEFAULT_ABROAD_TUNNEL=${DEFAULT_ABROAD_TUNNEL:-true}
 BLOCKED_IP_ABROAD_TUNNEL=${BLOCKED_IP_ABROAD_TUNNEL:-true}
@@ -134,7 +135,7 @@ elif $IPV6_GRE_TUNNEL_ENABLE; then
     if $IPV6_BLACKLIST_ENABLE; then
     	cat blacklist-v6.txt | disable_route6 $blocked
     else
-    	ip -6 flush table $blocked
+    	ip -6 route flush table $blocked
     fi
 
     # clear rules

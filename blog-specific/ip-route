@@ -44,14 +44,15 @@ function disable_route6() {
     (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route add unreachable %s table $tableid\n\", \$1); }") | ip -6 -batch -
 }
 
-echo "set up IP-in-IP tunnel..."
-echo "set up IP-in-IP tunnel..."
-ip tunnel del tunipip
-ip tunnel add tunipip mode ipip local 202.141.160.95 remote 202.38.93.95
-ip link set tunipip up
-ip addr flush dev tunipip
-ip addr add 10.0.160.99/32 dev tunipip
-ip route replace 10.0.93.95/32 dev tunipip
+echo "set up CERNET tunnel..."
+ip tunnel del gre_cernet
+ip tunnel add gre_cernet mode gre local 202.141.160.95 remote 202.38.93.95 ttl 255
+ip link set gre_cernet up
+ip addr flush dev gre_cernet
+ip addr add 10.0.160.95/32 dev gre_cernet
+ip route replace 10.0.93.95/32 dev gre_cernet
+# encapsulated packets from gre_cernet must go through telecom interface
+ip route replace 202.38.93.95/32 via 202.141.160.126 table 1002
 
 # define routing table preference (high to low)
 route_pref="mirrors_mobile ustc cernet mobile telecom chnroutes whitelist"

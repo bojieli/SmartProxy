@@ -1,0 +1,10 @@
+-A -u lug-vpn.lug.ustc.du.cn:1194 -s rr
+-a -u lug-vpn.lug.ustc.du.cn:1194 -r lug-vpn.lug.ustc.du.cn:10001 -m -w 1
+-a -u lug-vpn.lug.ustc.du.cn:1194 -r lug-vpn.lug.ustc.du.cn:10002 -m -w 1
+-a -u lug-vpn.lug.ustc.du.cn:1194 -r lug-vpn.lug.ustc.du.cn:10003 -m -w 1
+-a -u lug-vpn.lug.ustc.du.cn:1194 -r lug-vpn.lug.ustc.du.cn:10004 -m -w 1
+-A -u 202.141.176.95:1194 -s rr
+-a -u 202.141.176.95:1194 -r lug-vpn.lug.ustc.du.cn:10001 -m -w 1
+-a -u 202.141.176.95:1194 -r lug-vpn.lug.ustc.du.cn:10002 -m -w 1
+-a -u 202.141.176.95:1194 -r lug-vpn.lug.ustc.du.cn:10003 -m -w 1
+-a -u 202.141.176.95:1194 -r lug-vpn.lug.ustc.du.cn:10004 -m -w 1

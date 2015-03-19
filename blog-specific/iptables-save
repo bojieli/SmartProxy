@@ -25,6 +25,9 @@
 -A POSTROUTING -s 10.6.0.0/16 ! -d 10.6.0.0/16 -j MASQUERADE
 -A POSTROUTING -s 10.5.0.0/16 ! -d 10.5.0.0/16 -j MASQUERADE
 -A POSTROUTING -s 10.4.0.0/16 ! -d 10.4.0.0/16 -j MASQUERADE
+-A POSTROUTING -s 10.3.0.0/16 ! -d 10.3.0.0/16 -j MASQUERADE
+-A POSTROUTING -s 10.2.0.0/16 ! -d 10.2.0.0/16 -j MASQUERADE
+-A POSTROUTING -s 10.1.0.0/16 ! -d 10.1.0.0/16 -j MASQUERADE
 # 5300 = 0x14b4
 -A POSTROUTING -m mark --mark 0x14b0/0xfff0 -j MASQUERADE
 COMMIT
@@ -37,13 +40,13 @@ COMMIT
 :OUTPUT ACCEPT [528194277:533930911952]
 :POSTROUTING ACCEPT [1061513569:995914874237]
 -N vpn_fwd_load_balance
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 0 -j MARK --set-mark 8006
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 1 -j MARK --set-mark 8006
+-A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 0 -j MARK --set-mark 8009
+-A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 1 -j MARK --set-mark 8009
 -A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 2 -j MARK --set-mark 8010
 -A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 3 -j MARK --set-mark 8010
 -A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 4 -j MARK --set-mark 8010
 -N vpn_local_load_balance
--A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 0 -j MARK --set-mark 5306
+-A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 0 -j MARK --set-mark 5309
 -A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 1 -j MARK --set-mark 5310
 -A PREROUTING -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT

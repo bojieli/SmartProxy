@@ -52,14 +52,15 @@ COMMIT
 :OUTPUT ACCEPT [528194277:533930911952]
 :POSTROUTING ACCEPT [1061513569:995914874237]
 -N vpn_fwd_load_balance
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 0 -j MARK --set-mark 8009
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 1 -j MARK --set-mark 8009
+-A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 0 -j MARK --set-mark 8010
+-A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 1 -j MARK --set-mark 8011
 -A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 2 -j MARK --set-mark 8010
 -A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 3 -j MARK --set-mark 8010
--A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 4 -j MARK --set-mark 8010
+-A vpn_fwd_load_balance -m statistic --mode nth --every 5 --packet 4 -j MARK --set-mark 8011
 -N vpn_local_load_balance
--A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 0 -j MARK --set-mark 5309
--A vpn_local_load_balance -m statistic --mode nth --every 2 --packet 1 -j MARK --set-mark 5310
+-A vpn_local_load_balance -m statistic --mode nth --every 3 --packet 0 -j MARK --set-mark 5311
+-A vpn_local_load_balance -m statistic --mode nth --every 3 --packet 1 -j MARK --set-mark 5310
+-A vpn_local_load_balance -m statistic --mode nth --every 3 --packet 2 -j MARK --set-mark 5311
 -A PREROUTING -j CONNMARK --restore-mark --nfmask 0xffffffff --ctmask 0xffffffff
 -A PREROUTING -m mark ! --mark 0x0 -j ACCEPT
 -A PREROUTING -d 202.141.160.95/32 -i eth0 -j MARK --set-xmark 0xa0/0xffffffff

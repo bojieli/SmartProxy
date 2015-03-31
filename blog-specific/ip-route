@@ -39,6 +39,12 @@ function disable_route() {
     (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route add unreachable %s table $tableid\n\", \$1); }") | ip -batch -
 }
 
+function set_route6() {
+    gw=$1
+    tableid=$2
+    (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route replace %s via $gw table $tableid\n\", \$1); }") | ip -6 -batch -
+}
+
 function disable_route6() {
     tableid=$1
     (echo "route flush table $tableid"; sed 's/\([ ;#].*\)//g;/^$/d' | awk "{printf(\"route add unreachable %s table $tableid\n\", \$1); }") | ip -6 -batch -
@@ -94,9 +100,7 @@ while true; do
 done
 
 echo "set up IPv6 route..."
-cat chnroutes-v6.txt | while read prefix comment; do
-    ip -6 route add $prefix via 2001:da8:d800:f001::1 dev eth0 table 10000   2>/dev/null
-done
+cat chnroutes-v6.txt paper-sites-v6.txt | set_route6 2001:da8:d800:f001::1 10000
 ip -6 rule del from all lookup 10000 pref 10000 2>/dev/null
 ip -6 rule add from all lookup 10000 pref 10000
 

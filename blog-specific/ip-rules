@@ -5,47 +5,47 @@ ip link set eth1 up
 ip route replace 202.141.160.0/25 dev eth0 proto kernel scope link
 ip route replace 202.141.176.0/25 dev eth1 proto kernel scope link
 
-ip route add 202.141.160.0/25 dev eth0 table 1000
-ip route add default via 202.141.160.126 dev eth0 table 1000
-ip route add 202.141.176.0/25 dev eth1 table 1001
-ip route add default via 202.141.176.126 dev eth1 table 1001
-
+ip route replace 202.141.160.0/25 dev eth0 table 1000
 ip route replace default via 202.141.160.126 table 1000
 ip rule del fwmark 160 lookup 1000 pref 2999 2>/dev/null
 ip rule add fwmark 160 lookup 1000 pref 2999
 
+ip route replace 202.141.176.0/25 dev eth1 table 1001
 ip route replace default via 202.141.176.126 table 1001
 ip rule del fwmark 176 lookup 1001 pref 2999 2>/dev/null
 ip rule add fwmark 176 lookup 1001 pref 2999
 
-ip route replace 10.32.0.0/16 via 10.32.0.1 table 1002
-ip route replace 10.31.0.0/16 via 10.31.0.1 table 1002
-ip route replace 10.30.0.0/16 via 10.30.0.1 table 1002
-ip route replace 10.29.0.0/16 via 10.29.0.1 table 1002
-ip route replace 10.28.0.0/16 via 10.28.0.1 table 1002
-ip route replace 10.27.0.0/16 via 10.27.0.1 table 1002
-ip route replace 10.26.0.0/16 via 10.26.0.1 table 1002
-ip route replace 10.25.0.0/16 via 10.25.0.1 table 1002
-ip route replace 10.24.0.0/16 via 10.24.0.1 table 1002
-ip route replace 10.23.0.0/16 via 10.23.0.1 table 1002
-ip route replace 10.22.0.0/16 via 10.22.0.1 table 1002
-ip route replace 10.21.0.0/16 via 10.21.0.1 table 1002
-ip route replace 10.8.0.0/16 via 10.8.0.1 table 1002
-ip route replace 10.7.0.0/16 via 10.7.0.1 table 1002
-ip route replace 10.6.0.0/16 via 10.6.0.1 table 1002
-ip route replace 10.5.0.0/16 via 10.5.0.1 table 1002
-ip route replace 10.4.0.0/16 via 10.4.0.1 table 1002
-ip route replace 10.3.0.0/16 via 10.3.0.1 table 1002
-ip route replace 10.2.0.0/16 via 10.2.0.1 table 1002
-ip route replace 10.1.0.0/16 via 10.1.0.1 table 1002
+ip route replace 202.141.160.0/25 dev eth0 table 10000
+ip route replace 202.141.176.0/25 dev eth1 table 10000
 
-ip route replace 10.0.7.0/30 dev blog-sg table 1002
-ip route replace 10.0.9.0/30 dev yfgao-do table 1002
-ip route replace 10.0.10.0/30 dev do table 1002
-ip route replace 10.0.11.0/30 dev armnotstrong table 1002
+ip route replace 10.32.0.0/16 via 10.32.0.1 table 10000
+ip route replace 10.31.0.0/16 via 10.31.0.1 table 10000
+ip route replace 10.30.0.0/16 via 10.30.0.1 table 10000
+ip route replace 10.29.0.0/16 via 10.29.0.1 table 10000
+ip route replace 10.28.0.0/16 via 10.28.0.1 table 10000
+ip route replace 10.27.0.0/16 via 10.27.0.1 table 10000
+ip route replace 10.26.0.0/16 via 10.26.0.1 table 10000
+ip route replace 10.25.0.0/16 via 10.25.0.1 table 10000
+ip route replace 10.24.0.0/16 via 10.24.0.1 table 10000
+ip route replace 10.23.0.0/16 via 10.23.0.1 table 10000
+ip route replace 10.22.0.0/16 via 10.22.0.1 table 10000
+ip route replace 10.21.0.0/16 via 10.21.0.1 table 10000
+ip route replace 10.8.0.0/16 via 10.8.0.1 table 10000
+ip route replace 10.7.0.0/16 via 10.7.0.1 table 10000
+ip route replace 10.6.0.0/16 via 10.6.0.1 table 10000
+ip route replace 10.5.0.0/16 via 10.5.0.1 table 10000
+ip route replace 10.4.0.0/16 via 10.4.0.1 table 10000
+ip route replace 10.3.0.0/16 via 10.3.0.1 table 10000
+ip route replace 10.2.0.0/16 via 10.2.0.1 table 10000
+ip route replace 10.1.0.0/16 via 10.1.0.1 table 10000
 
-ip rule del from all lookup 1002 pref 2000 2>/dev/null
-ip rule add from all lookup 1002 pref 2000
+ip route replace 10.0.7.0/30 dev blog-sg table 10000
+ip route replace 10.0.9.0/30 dev yfgao-do table 10000
+ip route replace 10.0.10.0/30 dev do table 10000
+ip route replace 10.0.11.0/30 dev armnotstrong table 10000
+
+ip rule del from all lookup 10000 pref 10000 2>/dev/null
+ip rule add from all lookup 10000 pref 10000
 
 ip route replace default via 10.0.10.1 table 1003
 ip rule del fwmark 1194 lookup 1003 pref 2999 2>/dev/null

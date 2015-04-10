@@ -60,6 +60,15 @@ ip route replace 10.0.93.95/32 dev gre_cernet
 # encapsulated packets from gre_cernet must go through telecom interface
 ip route replace 202.38.93.95/32 via 202.141.160.126 table 1002
 
+
+# echo "set up CERNET backup tunnel..."
+# ip tunnel del gre_cernet_backup
+# ip tunnel add gre_cernet_backup mode gre local 202.141.160.95 remote 222.195.92.141 ttl 255
+# ip link set gre_cernet_backup up
+# ip addr flush dev gre_cernet_backup
+# ip addr add 10.0.160.95/32 dev gre_cernet_backup
+# ip route replace 10.0.93.95/32 dev gre_cernet_backup
+
 # define routing table preference (high to low)
 route_pref="mirrors_mobile ustc cernet mobile telecom chnroutes whitelist"
 

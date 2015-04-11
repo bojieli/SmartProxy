@@ -18,26 +18,13 @@ ip rule add fwmark 176 lookup 1001 pref 2999
 ip route replace 202.141.160.0/25 dev eth0 table 10000
 ip route replace 202.141.176.0/25 dev eth1 table 10000
 
-ip route replace 10.32.0.0/16 via 10.32.0.1 table 10000
-ip route replace 10.31.0.0/16 via 10.31.0.1 table 10000
-ip route replace 10.30.0.0/16 via 10.30.0.1 table 10000
-ip route replace 10.29.0.0/16 via 10.29.0.1 table 10000
-ip route replace 10.28.0.0/16 via 10.28.0.1 table 10000
-ip route replace 10.27.0.0/16 via 10.27.0.1 table 10000
-ip route replace 10.26.0.0/16 via 10.26.0.1 table 10000
-ip route replace 10.25.0.0/16 via 10.25.0.1 table 10000
-ip route replace 10.24.0.0/16 via 10.24.0.1 table 10000
-ip route replace 10.23.0.0/16 via 10.23.0.1 table 10000
-ip route replace 10.22.0.0/16 via 10.22.0.1 table 10000
-ip route replace 10.21.0.0/16 via 10.21.0.1 table 10000
-ip route replace 10.8.0.0/16 via 10.8.0.1 table 10000
-ip route replace 10.7.0.0/16 via 10.7.0.1 table 10000
+ip rule del lookup 1002 pref 1000 2>/dev/null
+ip rule add lookup 1002 pref 1000
+
 ip route replace 10.6.0.0/16 via 10.6.0.1 table 10000
-ip route replace 10.5.0.0/16 via 10.5.0.1 table 10000
-ip route replace 10.4.0.0/16 via 10.4.0.1 table 10000
-ip route replace 10.3.0.0/16 via 10.3.0.1 table 10000
-ip route replace 10.2.0.0/16 via 10.2.0.1 table 10000
-ip route replace 10.1.0.0/16 via 10.1.0.1 table 10000
+ip route replace 10.9.0.0/16 via 10.9.0.1 table 10000
+ip route replace 10.10.0.0/16 via 10.10.0.1 table 10000
+ip route replace 10.11.0.0/16 via 10.11.0.1 table 10000
 
 ip route replace 10.0.7.0/30 dev blog-sg table 10000
 ip route replace 10.0.9.0/30 dev yfgao-do table 10000
@@ -63,6 +50,11 @@ ip -6 route add 2001:da8:d800:f001::/64 dev eth0 table 1000
 ip -6 route add default via 2001:da8:d800:f001::1 dev eth0 table 1000
 ip -6 rule del fwmark 95 lookup 1000 pref 1000
 ip -6 rule add fwmark 95 lookup 1000 pref 1000
+
+ip -6 rule del from all lookup 1002 pref 1000 2>/dev/null
+# this is to ensure local subnet do not go through gateway
+ip -6 route add 2001:da8:d800:f001::/64 dev eth0 table 1002 2>/dev/null
+ip -6 rule add from all lookup 1002 pref 1000
 
 ip -6 route replace default via fdfe:dcba:9876::10:1 table 1003
 ip -6 rule del fwmark 1194 lookup 1003 pref 2999 2>/dev/null

@@ -82,7 +82,7 @@ blocked=20000
 
 echo "generate routing tables..."
 #cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
-cat USTC.txt | set_route 202.141.176.126 $ustc
+cat USTC.txt | set_route 202.141.160.126 $ustc
 cat CERNET.txt | set_route 10.0.93.95 $cernet
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 #cat CMCC.txt | set_route 202.141.176.126 $mobile

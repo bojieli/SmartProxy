@@ -21,6 +21,9 @@ ip route replace 202.141.176.0/25 dev eth1 table 10000
 ip rule del lookup 1002 pref 1000 2>/dev/null
 ip rule add lookup 1002 pref 1000
 
+ip rule del pref 1001 lookup main 2>/dev/null
+ip rule add pref 1001 to 10.4.0.0/16 lookup main
+
 ip route replace 10.6.0.0/16 via 10.6.0.1 table 10000
 ip route replace 10.9.0.0/16 via 10.9.0.1 table 10000
 ip route replace 10.10.0.0/16 via 10.10.0.1 table 10000

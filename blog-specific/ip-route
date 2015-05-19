@@ -52,14 +52,14 @@ function disable_route6() {
 
 echo "set up CERNET tunnel..."
 ip tunnel del gre_cernet
-ip tunnel add gre_cernet mode gre local 202.141.176.95 remote 202.38.93.96 ttl 255
+ip tunnel add gre_cernet mode gre local 202.141.176.95 remote 202.38.93.97 ttl 255
 ip link set gre_cernet up
 ip addr flush dev gre_cernet
 ip addr add 10.0.176.95/32 dev gre_cernet
-ip route replace 10.0.93.96/32 dev gre_cernet
+ip route replace 10.0.93.97/32 dev gre_cernet
 # encapsulated packets from gre_cernet must go through telecom interface
-ip route replace 202.38.93.96/32 via 202.141.176.126 table 1002
-ip route replace 10.0.93.96/32 dev gre_cernet table 1002
+ip route replace 202.38.93.97/32 via 202.141.176.126 table 1002
+ip route replace 10.0.93.97/32 dev gre_cernet table 1002
 
 
 echo "set up CERNET backup tunnel..."
@@ -84,7 +84,7 @@ blocked=20000
 echo "generate routing tables..."
 #cat mirrors-mobile.txt | set_route 10.141.176.110 $mirrors_mobile
 cat USTC.txt | set_route 202.141.160.126 $ustc
-cat CERNET.txt | set_route 10.0.93.96 $cernet
+cat CERNET.txt | set_route 10.0.93.97 $cernet
 cat CHINANET.txt CNC.txt google.txt | set_route 202.141.160.126 $telecom
 #cat CMCC.txt | set_route 202.141.176.126 $mobile
 echo "" | set_route 202.141.176.126 $mobile
